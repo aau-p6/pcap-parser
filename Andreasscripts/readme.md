@@ -10,6 +10,8 @@ For at køre simulationer automatisk så kør automatic.py, men ændr i de ting 
 For hive information ud af en simulation så kør nyOverhead.py det er værd at nævne at den godt kan være langsom hvis man har kørt mange tests igennem. Denne vil gemme i fil kaldet collected_data i hver af test mapperne 
 /home/user/workspace/ns3/ns-3-dev/Results/OLSR/OLSR5<br/>
 
+Overheadthreading.py er en "ny" version som kører det i tråde for at reducere tiden markant. Maks antal tilladte tråde kan findes i toppen af scriptet, som kan ændres som man ønsker.
+
 statistic.py har brug for at nyOverhead.py er kørt igennem først<br/>
 For videre at hive data ud så som gennemsnitlig droprate, end to end delay og overhead så kør statistic.py denne vil gemmes i test typer mappen hvilket vil sige  /home/user/workspace/ns3/ns-3-dev/Results/OLSR under navnet statistic_data.txt
 Denne fil indeholder de tidligere nævnte værdier lige så vel som variationen og worst case værdien.<br/>

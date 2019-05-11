@@ -64,7 +64,7 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                         print(Data_storage)
                         mutex.acquire()
                         try:
-                            f= open('%s/HistogramData.txt' %(Data_storage) , 'a')
+                            f= open('%s/HistogramDelay.txt' %(Data_storage) , 'a')
                             f.write("%d," % Average_EndtoEndDelay)
                             f.close()
                         finally:
@@ -79,49 +79,6 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                             f.close()
                         finally:
                             mutex.release()
-
-        
-
-def SamletDataSendt(path):
- File_list = []
- del File_list [:]
- 
- #Vi finder alle Pcap filer i den folderen vi er i
- os.popen('ls %s| grep pcap > %s/idunno.txt' % (path, path)).read()
- os.popen('ls %s| grep pcap > %s/idunno.txt' % (path, path)).read()
- Pcap_count = os.popen('wc -l %s/idunno.txt' % (path)).read()
- # Vi finder det reelle antal af filer af pcap typen
- File_list_lenght =''.join(c for c in "%s"%Pcap_count if c.isdigit())
- readfile= open('%s/idunno.txt' % path, 'r')
- print("Still goin")
- for lines in readfile:
-    File_list.append(lines)
- readfile.close()
- Lenght = len(File_list)
- 
- Samlet = 0
-
- #Vi kan nu finde alt data sendt som set i pcap filerne
- for i in range(0, len(File_list)):
-  Overheadsum = 0
- # Vi laeser fra vores oenskede pcap fil en af gangen
-  fil = path + "/" + File_list[i].rstrip()
-  print(fil)
-  reader= pcapy.open_offline("%s"%fil)
- #Vi finder hvor mange frames der er i den givne pcap filen
-  Lenght = os.popen('tshark -r %s | wc -l' % fil).read()
-  PcapLenght = int(Lenght)
-
-  #Vi koerer igennem alle frames/pakker og finder deres laengder i bytes
-  for x in range(0, PcapLenght):
-      (header, payload) = reader.next();
-      # Summer alle frames laengder
-      
-      Overheadsum = Overheadsum + header.getlen();
-  Samlet = Samlet + Overheadsum
- os.popen('rm %s/idunno.txt' % path)
- print (Samlet)
-
 
 def AltDataSendt(path):
     File_list = []

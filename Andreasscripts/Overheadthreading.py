@@ -4,19 +4,18 @@ import re
 from threading import Thread, Lock
 import threading
 #Define the amount of threads to allow be run at the same time. Running more threads should decrease time to extract information.
-MaxThreads = 10
+MaxThreads = 40
 #Define the name of test types as found in the /ns-3-dev/Results 
-Test_type = ["AODV", "DSR", "OLSR", "DSDV"];
 mutex = Lock()
 
-def Flow_Monitor(test_typer, test_typer_count):
+def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                 
                 # We check if the previously defined dir_navn exists and if so we will look for the xml file in there
                 if (os.path.isdir(test_typer + "/" + test_typer_count)):
                     xml_navn = test_typer + ".xml"
                 # We open the flow_monitor xml file for extraction
                     Flow_Ids = []
-                    f = open('%s/%s/%s' % (test_typer, test_typer_count, xml_navn), 'r')
+                    f = open('%s/%s/%s/%s' % (test_typer, test_typer_count, statistic_test_count, xml_navn), 'r')
                     #We read the entire file
                     f1 = f.readlines()
                     f.close()
@@ -53,25 +52,34 @@ def Flow_Monitor(test_typer, test_typer_count):
                     if PacketsReceived != 0:
                         Average_EndtoEndDelay = (EndtoEndDelay /PacketsReceived)
     # We calculate data based on the sum of the previous extracted data 
-                    sti = test_typer + "/"+ test_typer_count
-                    SamletData = int(SamletDataSendt(sti))
-                    OverheadData = SamletData - DataSent
+                    sti = test_typer + "/"+ test_typer_count + "/" + statistic_test_count
+                    print(sti)
+                    SamletData = int(AltDataSendt(sti))
+                    OverheadData = SamletData/DataSent *100
                     Unlisted_Dropped = (PacketsSent - (PacketsReceived + PacketsDropped))
                     Packet_drop_rate = PacketsReceived/PacketsSent * 100
                     if len(Flow_Ids) != 0:
                     #We save a collecte_data.txt in each of the directories of the different tests run
-                        Data_storage =  test_typer
+                        Data_storage =  test_typer +"/" + test_typer_count
+                        print(Data_storage)
                         mutex.acquire()
                         try:
-                            f= open('%s/Collected_data.txt' %(Data_storage) , 'a')
+                            f= open('%s/HistogramData.txt' %(Data_storage) , 'a')
                             f.write("%d," % Average_EndtoEndDelay)
-                        #f.write('Vi er nu i fil %s\n' %test_typer_count)
-                        #f.write ('Total amount of packets sent %d\n Toal amount of packets received %d\nThe Average end to end delay was %d nanoseconds\n' %( PacketsSent, PacketsReceived, Average_EndtoEndDelay))
-                        #f.write('Overhead for this test was %d\nPacket drop rate for this test was %d\n' % (OverheadData, Packet_drop_rate))
-                        #f.write ("\nNew test data will come on \n\n")
                             f.close()
                         finally:
                             mutex.release()
+                        mutex.acquire()
+                        try:
+                            f= open('%s/Collected_data.txt' %(Data_storage) , 'a')
+                            f.write('Vi er nu i fil %s/%s\n' %(test_typer_count, statistic_test_count))
+                            f.write ('Total amount of packets sent %d\n Toal amount of packets received %d\nThe Average end to end delay was %d nanoseconds\n' %( PacketsSent, PacketsReceived, Average_EndtoEndDelay))
+                            f.write('Overhead for this test was %d procent \nPacket drop rate for this test was %d\n' % (OverheadData, Packet_drop_rate))
+                            f.write ("\nNew test data will come in \n\n")
+                            f.close()
+                        finally:
+                            mutex.release()
+
         
 
 def SamletDataSendt(path):
@@ -85,6 +93,7 @@ def SamletDataSendt(path):
  # Vi finder det reelle antal af filer af pcap typen
  File_list_lenght =''.join(c for c in "%s"%Pcap_count if c.isdigit())
  readfile= open('%s/idunno.txt' % path, 'r')
+ print("Still goin")
  for lines in readfile:
     File_list.append(lines)
  readfile.close()
@@ -97,6 +106,7 @@ def SamletDataSendt(path):
   Overheadsum = 0
  # Vi laeser fra vores oenskede pcap fil en af gangen
   fil = path + "/" + File_list[i].rstrip()
+  print(fil)
   reader= pcapy.open_offline("%s"%fil)
  #Vi finder hvor mange frames der er i den givne pcap filen
   Lenght = os.popen('tshark -r %s | wc -l' % fil).read()
@@ -110,31 +120,63 @@ def SamletDataSendt(path):
       Overheadsum = Overheadsum + header.getlen();
   Samlet = Samlet + Overheadsum
  os.popen('rm %s/idunno.txt' % path)
- return Samlet
+ print (Samlet)
+
+
+def AltDataSendt(path):
+    File_list = []
+    PcapFiles =[]
+    Overheadsum = 0
+    Samlet = 0
+ #Vi finder alle Pcap filer i den folderen vi er i
+ # Vi finder det reelle antal af filer af pcap typen
+    substring = '.pcap'
+    for Allfiles in os.popen('ls %s' %path):
+        if substring in Allfiles:
+            PcapFiles.append(Allfiles) 
+ #Vi kan nu finde alt data sendt som set i pcap filerne
+    for pcap in PcapFiles:
+ # Vi laeser fra vores oenskede pcap fil en af gangen
+        fil = path + "/" + pcap.rstrip()
+        reader = pcapy.open_offline("%s" % fil)
+ #Vi finder hvor mange frames der er i den givne pcap filen
+        Lenght = os.popen('tshark -r %s | wc -l' % fil).read()
+        PcapLenght = int(Lenght)
+  #Vi koerer igennem alle frames/pakker og finder deres laengder i bytes
+        for x in range(0, PcapLenght):
+            (header, payload) = reader.next();
+      # Summer alle frames laengder
+      
+            Overheadsum = Overheadsum + header.getlen();
+    Samlet = Samlet + Overheadsum
+    return(Samlet)
+    
+
+
+
 
 
 def main():
+    
       # We will go through the different tests we have as defined in the Test_type array
-    for test_typer in Test_type:
+    for test_typer in os.walk('.').next()[1]:
          # Directory wise this is /ns-3-dev/Results and can see the 4 test_types
-        print("We are now going through %s\n" %test_typer)
         #Directory wise this is /ns-3-dev/Results/OLSR for example
         # We will go into the different directories which should be present if a test was made 
-        for test_typer_count in os.walk("%s" % (test_typer)).next()[1]: 
-                print(test_typer_count)
+        for test_typer_count in os.walk("%s" % (test_typer)).next()[1]:
             # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5 where the last directory is the different tests as specified in automatic.py
             #Further down we now are in the directory of extra tests for the same test in order to make statistical analysis on it
-            #for statistic_test_count in os.walk("%s/%s" % ( test_typer, test_typer_count)).next()[1]: 
+            if os.path.isdir('%s/%s' % (test_typer, test_typer_count )) == True:
+                for statistic_test_count in os.walk("%s/%s" % ( test_typer, test_typer_count)).next()[1]: 
                 # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5/test5 where the last directory will maximum be the run_number specified in automatic.py
                 #We define the specific directory to look into.
-                #dir_navn = test_typer + "/" + test_typer_count
-                tjek = threading.activeCount()
-                while True:
+                    dir_navn = test_typer + "/" + test_typer_count
+                    while True:
                 #Flow_Monitor(dir_navn)
-                    if threading.activeCount() < MaxThreads:
-                        x = Thread(target = Flow_Monitor, args = (test_typer, test_typer_count))
-                        x.start()
-                        break
+                        if threading.activeCount() < MaxThreads:
+                            x = Thread(target = Flow_Monitor, args = (test_typer, test_typer_count, statistic_test_count))
+                            x.start()
+                            break
 
 main()
 

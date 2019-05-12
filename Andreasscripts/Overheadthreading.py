@@ -4,11 +4,12 @@ import re
 from threading import Thread, Lock
 import threading
 #Define the amount of threads to allow be run at the same time. Running more threads should decrease time to extract information.
-MaxThreads = 40
+MaxThreads = 20
 #Define the name of test types as found in the /ns-3-dev/Results 
 mutex = Lock()
 
 def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
+                
                 
                 # We check if the previously defined dir_navn exists and if so we will look for the xml file in there
                 if (os.path.isdir(test_typer + "/" + test_typer_count)):
@@ -34,7 +35,9 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                             PacketsDropped = 0
                             Unlisted_Dropped = 0
                             EndtoEndDelay = 0
-                            Average_EndtoEndDelay = 0
+                            Average_EndtoEndDelay = -1
+                            OverheadData = -1
+                            Packet_drop_rate = 0
     # We will go through each individual Flow_ID and find their respective data and sum it up
 
                             for lines in Flow_Ids:
@@ -49,26 +52,49 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                                 DataSent = PacketsSent * 1000
                                 DataReceived = 1000 * PacketsReceived
                                 EndtoEndDelay = int(Data[11][1:-4]) + EndtoEndDelay
+                                
                     if PacketsReceived != 0:
                         Average_EndtoEndDelay = (EndtoEndDelay /PacketsReceived)
     # We calculate data based on the sum of the previous extracted data 
                     sti = test_typer + "/"+ test_typer_count + "/" + statistic_test_count
                     print(sti)
                     SamletData = int(AltDataSendt(sti))
-                    OverheadData = SamletData/DataSent *100
-                    Unlisted_Dropped = (PacketsSent - (PacketsReceived + PacketsDropped))
-                    Packet_drop_rate = PacketsReceived/PacketsSent * 100
+                    if DataReceived !=0:
+                        OverheadData = (SamletData/DataReceived) *100
+                    Packet_drop_rate = (1-(PacketsReceived*1.0)/(PacketsSent*1.0)) * 100.0
                     if len(Flow_Ids) != 0:
                     #We save a collecte_data.txt in each of the directories of the different tests run
                         Data_storage =  test_typer +"/" + test_typer_count
-                        print(Data_storage)
+                        Histogram_storage = "Histogramdata/" +  test_typer_count[0:]
+
+                        #Write Droprates for histograms
                         mutex.acquire()
                         try:
-                            f= open('%s/HistogramDelay.txt' %(Data_storage) , 'a')
+                            f= open('%sHistogramDroprate.txt' %(Histogram_storage) , 'a')
                             f.write("%d," % Average_EndtoEndDelay)
                             f.close()
                         finally:
                             mutex.release()
+                            
+                            #Write Delays for histogram
+                        mutex.acquire()
+                        try:
+                            f= open('%sHistogramDelay.txt' %(Histogram_storage) , 'a')
+                            f.write("%d," % Packet_drop_rate)
+                            f.close()
+                        finally:
+                            #Write Overhead for histogram
+                            mutex.release()
+                            
+                        mutex.acquire()
+                        try:
+                            f= open('%sHistogramOverhead.txt' %(Histogram_storage) , 'a')
+                            f.write("%d," % OverheadData)
+                            f.close()
+                        finally:
+                            mutex.release()
+                            
+                            
                         mutex.acquire()
                         try:
                             f= open('%s/Collected_data.txt' %(Data_storage) , 'a')
@@ -86,14 +112,13 @@ def AltDataSendt(path):
     Overheadsum = 0
     Samlet = 0
  #Vi finder alle Pcap filer i den folderen vi er i
- # Vi finder det reelle antal af filer af pcap typen
     substring = '.pcap'
     for Allfiles in os.popen('ls %s' %path):
         if substring in Allfiles:
             PcapFiles.append(Allfiles) 
- #Vi kan nu finde alt data sendt som set i pcap filerne
+ #Vi kan nu finde alt data sendt som er i pcap filen.
     for pcap in PcapFiles:
- # Vi laeser fra vores oenskede pcap fil en af gangen
+ #We read one pcap file at a time.
         fil = path + "/" + pcap.rstrip()
         reader = pcapy.open_offline("%s" % fil)
  #Vi finder hvor mange frames der er i den givne pcap filen
@@ -114,28 +139,30 @@ def AltDataSendt(path):
 
 
 def main():
+    #Used to save Histogram data
+    if os.path.isdir('Histogramdata') !=True:
+        os.makedirs('Histogramdata')
     
       # We will go through the different tests we have as defined in the Test_type array
     for test_typer in os.walk('.').next()[1]:
-         # Directory wise this is /ns-3-dev/Results and can see the 4 test_types
         #Directory wise this is /ns-3-dev/Results/OLSR for example
-        # We will go into the different directories which should be present if a test was made 
         for test_typer_count in os.walk("%s" % (test_typer)).next()[1]:
             # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5 where the last directory is the different tests as specified in automatic.py
             #Further down we now are in the directory of extra tests for the same test in order to make statistical analysis on it
             if os.path.isdir('%s/%s' % (test_typer, test_typer_count )) == True:
                 for statistic_test_count in os.walk("%s/%s" % ( test_typer, test_typer_count)).next()[1]: 
                 # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5/test5 where the last directory will maximum be the run_number specified in automatic.py
-                #We define the specific directory to look into.
+                #We define the specific directory to look into for the thread.
                     dir_navn = test_typer + "/" + test_typer_count
                     while True:
-                #Flow_Monitor(dir_navn)
+                #We call the if to ensure no more than the max allowed threads are running at once
                         if threading.activeCount() < MaxThreads:
                             x = Thread(target = Flow_Monitor, args = (test_typer, test_typer_count, statistic_test_count))
                             x.start()
+                            #Break out of the while loop to return to the above for loop.
                             break
 
 main()
-
+#Flow_Monitor('OLSR', 'OLSR15', 'test50')
 
 

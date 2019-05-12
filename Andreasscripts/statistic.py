@@ -74,7 +74,7 @@ def statistic():
                 #Confidence interval is presented with 2 digits
                 Delay_Confidence_leftside = round(DelayAverage - (1.96 * Delay_Standard_deviation/math.sqrt(len(Delays))),2 )
                 Delay_Confidence_rightside = round(DelayAverage + (1.96 * Delay_Standard_deviation/math.sqrt(len(Delays))),2 )
-                print(" Delay For test %s Confidence interval is %s < theta > %s" %(node_count,Delay_Confidence_leftside, Delay_Confidence_rightside))
+                print(" Delay For test %s Confidence interval is %s < theta > %s" %(node_count, Delay_Confidence_leftside, Delay_Confidence_rightside))
             #Comments in this section also apply to the others
             
             #Overhead

@@ -1,5 +1,6 @@
 import os
 import math
+import numpy
 Test_type = ["AODV", "DSR", "OLSR", "DSDV"];
 
 def statistic():
@@ -15,6 +16,7 @@ def statistic():
             tempPacketsSent = []
             tempPacketsReceived = []
             Droprate = []
+            delay = 0
             DelaySum = 0
             OverheadAverage = 0
             PacketsSentSum = 0
@@ -27,7 +29,6 @@ def statistic():
             Worst_Overhead = 0
             Worst_delay = 0
             Worst_Droprate = 0
-            
             
             # We will now extract the actual number for the metrics
             #These are extracted by saving which lines contain the relevant info.
@@ -62,10 +63,11 @@ def statistic():
                     if Worst_delay < int(entry)/1000000: # Dividing by 1000000 is to have the number in milliseconds rather than nanoseconds
                         Worst_delay = int(entry)/1000000
                 #Average is calculated by summing up all the entries divided by the amount of entries.
-                    DelayAverage = DelayAverage + (int(entry)/1000000)/len(Delays) 
+                    DelayAverage= DelayAverage + (int(entry)/1000000)
+                DelayAverage = DelayAverage/len(Delays)
                 for entry in Delays:
                 #Standard_Deviation is calculated as the sum of each entry minus the average squared.
-                    Delay_Variation = ((int(entry)/1000000) - DelayAverage) * ((int(entry)/1000000) - DelayAverage) + Delay_Variation
+                    Delay_Variation = (((int(entry)/1000000) - DelayAverage) * ((int(entry)/1000000) - DelayAverage)) + Delay_Variation
             #We furthermore divide this by the lenght of entries
                 Delay_Variation = Delay_Variation/len(Delays)
                 Delay_Standard_deviation = math.sqrt(Delay_Variation)
@@ -78,11 +80,12 @@ def statistic():
             #Overhead
             if len(Overhead) !=0:
                 for entry in Overhead:
-                    if Worst_Overhead < int(entry)/1000:
-                        Worst_Overhead = int(entry)/1000
-                    OverheadAverage = OverheadAverage + (int(entry)/1000)/len(Overhead)
+                    if Worst_Overhead < int(entry):
+                        Worst_Overhead = int(entry)
+                    OverheadAverage = OverheadAverage + (int(entry))
+                OverheadAverage = OverheadAverage/len(Overhead)
                 for entry in Overhead:
-                    Overhead_Variation= ((int(entry)/1000) - OverheadAverage) * ((int(entry)/1000)-OverheadAverage) + Overhead_Variation
+                    Overhead_Variation= ((int(entry)) - OverheadAverage) * ((int(entry))-OverheadAverage) + Overhead_Variation
                 Overhead_Variation = Overhead_Variation / len(Overhead)
                 Overhead_Standard_deviation = math.sqrt(Overhead_Variation)
                 Overhead_Confidence_leftside = round(OverheadAverage - (1.96 * Overhead_Standard_deviation/math.sqrt(len(Overhead))),2 )
@@ -98,7 +101,8 @@ def statistic():
                 for entry in Droprate:
                     if Worst_Droprate < int(entry):
                         Worst_Droprate = int(entry)
-                    DroprateAverage = DroprateAverage + (float(entry))/len(Droprate)
+                    DroprateAverage = DroprateAverage + (float(entry))
+                DroprateAverage = DroprateAverage/len(Droprate)
                 for entry in Droprate:
                     Droprate_Variation = (float(entry) - DroprateAverage) * (float(entry) - DroprateAverage) + Droprate_Variation
                 Droprate_Variation = Droprate_Variation/len(Droprate)
@@ -106,13 +110,14 @@ def statistic():
                 Droprate_Confidence_leftside = round(DroprateAverage - (1.96 * Droprate_Standard_deviation/math.sqrt(len(Droprate))), 2)
                 Droprate_Confidence_rightside = round(DroprateAverage + (1.96 * Droprate_Standard_deviation/math.sqrt(len(Droprate))), 2)
                 print (" Droprate For test %s Confidence interval is %s < theta > %s" %(node_count, Droprate_Confidence_leftside, Droprate_Confidence_rightside))
-            
-            
+                
+            #Write to file - Is currently placed in the upper folder as in Results/{Protocol}/{Test_type} where the tests run for that configuration are placed.
+            #Test_type could here be a specific amount of nodes.
             f = open("%s/Statistic data.txt" %( test_navn), 'a')
             f.write("\n############################ Data for test %s ###########################\n" %node_count)
             f.write("Average Delay in milliseconds %s\nStandard deviation %s\nWorstcase %s\n" % (DelayAverage, Delay_Variation, Worst_delay))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Delay_Confidence_leftside, Delay_Confidence_rightside))
-            f.write("Average Overhead in thousands %s\nStandard deviation %s\nWorstcase %s\n" % (OverheadAverage, Overhead_Variation, Worst_Overhead))
+            f.write("Average Overhead in Percent %s\nStandard deviation %s\nWorstcase %s\n" % (OverheadAverage, Overhead_Variation, Worst_Overhead))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Overhead_Confidence_leftside, Overhead_Confidence_rightside))
             f.write("Average droprate in percent %s\nStandard deviation %s\nWorstcase %s\n" % (DroprateAverage, Droprate_Variation, Worst_Droprate))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Droprate_Confidence_leftside, Droprate_Confidence_rightside))

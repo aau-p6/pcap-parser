@@ -1,4 +1,4 @@
-#PCAP parsing for ns trace files
+# PCAP parsing for ns trace files
 This repo holds scripts for parsing the pcap output files of our ns3 sims
 
 ## Requirements

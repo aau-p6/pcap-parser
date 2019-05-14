@@ -49,7 +49,7 @@ double min_random_interval = 0.0;
 double max_random_interval = 10.0;
 float min_packetinterval = 0.5;
 int max_packetinterval = 2;
-  string File_name = "Results/Experimental";
+string File_name = "Results/OLSR";
 
   // Call this function everytime a random number is desired
   double Randomnummer(){

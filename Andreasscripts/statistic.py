@@ -31,6 +31,7 @@ def statistic():
             Worst_Overhead = 10
             Worst_delay = 0
             Worst_Droprate = 0
+            Xnummer = []
             
             # We will now extract the actual number for the metrics
             #These are extracted by saving which lines contain the relevant info.
@@ -43,7 +44,6 @@ def statistic():
                     
             tempOverhead = os.popen("grep Overhead %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
             for s in tempOverhead.split():
-                print(s)
                 if s.isdigit():
                     Overhead.append(s)
                     
@@ -84,6 +84,8 @@ def statistic():
             #Overhead
             if len(Overhead) !=0:
                 for entry in Overhead:
+                    if entry == -1:
+                        print("Fuuuck")
                     c = float(entry)/100
                     value = (1/c)*100
                     Overhead_fixed.append(value)
@@ -120,27 +122,42 @@ def statistic():
                 Droprate_Confidence_rightside = round(DroprateAverage + (1.96 * Droprate_Standard_deviation/math.sqrt(len(Droprate))), 2)
                 #print ("Droprate For test %s Confidence interval is %f < theta > %f" %(node_count, Droprate_Confidence_leftside, Droprate_Confidence_rightside))
             
-            f = open("%s/Confidenceinterval_Left_Delay" %Interval_Storage, 'a')
+            f = open("%s/Confidenceinterval_Left_Delay.txt" %Interval_Storage, 'a')
             f.write("%s,"%Delay_Confidence_leftside)
             f.close()
+            print(node_count)
+            for s in node_count:
+                X =''
+                if s.isdigit():
+                    Xnummer.append(s)
+            #print("Xnummer er %s\n" % Xnummer)
+            for string in range(len(Xnummer)):
+                X = X + Xnummer[string]
+                X = X.rstrip()
+            #print(X)
+                    
+                    #print(X)
+            f = open("%s/X.txt" %Interval_Storage, 'a')
+            f.write("%s,"%X)
+            f.close()
             
-            f = open("%s/Confidenceinterval_Right_Delay" %Interval_Storage, 'a')
+            f = open("%s/Confidenceinterval_Right_Delay.txt" %Interval_Storage, 'a')
             f.write("%s," %Delay_Confidence_rightside)
             f.close()
             
-            f = open("%s/Confidenceinterval_Left_Droprate" %Interval_Storage, 'a')
+            f = open("%s/Confidenceinterval_Left_Droprate.txt" %Interval_Storage, 'a')
             f.write("%s,"%Droprate_Confidence_leftside)
             f.close()
             
-            f = open("%s/Confidenceinterval_Right_Droprate" %Interval_Storage, 'a')
+            f = open("%s/Confidenceinterval_Right_Droprate.txt" %Interval_Storage, 'a')
             f.write("%s,"%Droprate_Confidence_rightside)
             f.close()
             
-            f = open("%s/Confidenceinterval_Left_Overhead" %Interval_Storage, 'a')
+            f = open("%s/Confidenceinterval_Left_Overhead.txt" %Interval_Storage, 'a')
             f.write("%f," %Overhead_Confidence_leftside)
             f.close()
             
-            f = open("%s/Confidenceinterval_Right_Overhead" %Interval_Storage, 'a')
+            f = open("%s/Confidenceinterval_Right_Overhead.txt" %Interval_Storage, 'a')
             f.write("%f," %Overhead_Confidence_rightside)
             f.close()
                 
@@ -148,6 +165,7 @@ def statistic():
             #Write to file - Is currently placed in the upper folder as in Results/{Protocol}/{Test_type} where the tests run for that configuration are placed.
             #Test_type could here be a specific amount of nodes.
             f = open("%s/Statistic data.txt" %( test_navn), 'a')
+            print(node_count)
             f.write("\n############################ Data for test %s ###########################\n" %node_count)
             f.write("Average Delay in milliseconds %s\nStandard deviation %s\nWorstcase %s\n" % (DelayAverage, Delay_Variation, Worst_delay))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Delay_Confidence_leftside, Delay_Confidence_rightside))

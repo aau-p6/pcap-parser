@@ -1,9 +1,10 @@
 import os
 import math
-import numpy
+import re
 Test_type = ["AODV", "DSR", "OLSR", "DSDV"];
 
 def statistic():
+    Interval_Storage="Histogramdata/Intervaller"
     for test_navn in Test_type: # We are going through the 4 directories defined in Test_type
         for node_count in os.walk("%s" % (test_navn)).next()[1]: # We go through the individual type test i.e 5 nodes, 10 nodes and so on
             #Clearing variables used during extraction of individual tests data.
@@ -16,6 +17,7 @@ def statistic():
             tempPacketsSent = []
             tempPacketsReceived = []
             Droprate = []
+            Overhead_fixed = []
             delay = 0
             DelaySum = 0
             OverheadAverage = 0
@@ -26,7 +28,7 @@ def statistic():
             Delay_Variation = 0
             Droprate_Variation = 0
             Overhead_Variation = 0
-            Worst_Overhead = 0
+            Worst_Overhead = 10
             Worst_delay = 0
             Worst_Droprate = 0
             
@@ -40,12 +42,14 @@ def statistic():
                     Delays.append(s)
                     
             tempOverhead = os.popen("grep Overhead %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
-            for s in tempOverhead.split(): 
+            for s in tempOverhead.split():
+                print(s)
                 if s.isdigit():
                     Overhead.append(s)
                     
             tempPacketsSent = os.popen("grep 'packets sent' %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
-            for s in tempPacketsSent.split(): 
+            for s in tempPacketsSent.split():
+                
                 if s.isdigit():
                     PacketsSent.append(s)
                     
@@ -74,23 +78,28 @@ def statistic():
                 #Confidence interval is presented with 2 digits
                 Delay_Confidence_leftside = round(DelayAverage - (1.96 * Delay_Standard_deviation/math.sqrt(len(Delays))),2 )
                 Delay_Confidence_rightside = round(DelayAverage + (1.96 * Delay_Standard_deviation/math.sqrt(len(Delays))),2 )
-                print(" Delay For test %s Confidence interval is %s < theta > %s" %(node_count, Delay_Confidence_leftside, Delay_Confidence_rightside))
+                #print(" Delay For test %s Confidence interval is %s < theta > %s" %(node_count, Delay_Confidence_leftside, Delay_Confidence_rightside))
             #Comments in this section also apply to the others
             
             #Overhead
             if len(Overhead) !=0:
                 for entry in Overhead:
-                    if Worst_Overhead < int(entry):
-                        Worst_Overhead = int(entry)
-                    OverheadAverage = OverheadAverage + (int(entry))
+                    c = float(entry)/100
+                    value = (1/c)*100
+                    Overhead_fixed.append(value)
+                for entry in Overhead_fixed:
+                    if Worst_Overhead > float(entry):
+                        #print(Worst_Overhead)
+                        Worst_Overhead = float(entry)
+                    OverheadAverage = OverheadAverage + float(entry)
                 OverheadAverage = OverheadAverage/len(Overhead)
-                for entry in Overhead:
-                    Overhead_Variation= ((int(entry)) - OverheadAverage) * ((int(entry))-OverheadAverage) + Overhead_Variation
+                for entry in Overhead_fixed:
+                    Overhead_Variation= ((float(entry)) - OverheadAverage) * ((float(entry))-OverheadAverage) + Overhead_Variation
                 Overhead_Variation = Overhead_Variation / len(Overhead)
                 Overhead_Standard_deviation = math.sqrt(Overhead_Variation)
-                Overhead_Confidence_leftside = round(OverheadAverage - (1.96 * Overhead_Standard_deviation/math.sqrt(len(Overhead))),2 )
-                Overhead_Confidence_rightside = round(OverheadAverage + (1.96 * Overhead_Standard_deviation/math.sqrt(len(Overhead))), 2)
-                print (" Overhead For test %s Confidence interval is %s < theta > %s" %(node_count,Overhead_Confidence_leftside, Overhead_Confidence_rightside))
+                Overhead_Confidence_leftside = round(OverheadAverage - (1.96 * Overhead_Standard_deviation/math.sqrt(len(Overhead))),5)
+                Overhead_Confidence_rightside =round(OverheadAverage + (1.96 * Overhead_Standard_deviation/math.sqrt(len(Overhead))), 5)
+                #print (" Overhead For test %s Confidence interval is %s < theta > %s" %(node_count,Overhead_Confidence_leftside, Overhead_Confidence_rightside))
             
             
             #Droprate
@@ -109,7 +118,32 @@ def statistic():
                 Droprate_Standard_deviation = math.sqrt(Droprate_Variation)
                 Droprate_Confidence_leftside = round(DroprateAverage - (1.96 * Droprate_Standard_deviation/math.sqrt(len(Droprate))), 2)
                 Droprate_Confidence_rightside = round(DroprateAverage + (1.96 * Droprate_Standard_deviation/math.sqrt(len(Droprate))), 2)
-                print (" Droprate For test %s Confidence interval is %s < theta > %s" %(node_count, Droprate_Confidence_leftside, Droprate_Confidence_rightside))
+                #print ("Droprate For test %s Confidence interval is %f < theta > %f" %(node_count, Droprate_Confidence_leftside, Droprate_Confidence_rightside))
+            
+            f = open("%s/Confidenceinterval_Left_Delay" %Interval_Storage, 'a')
+            f.write("%s,"%Delay_Confidence_leftside)
+            f.close()
+            
+            f = open("%s/Confidenceinterval_Right_Delay" %Interval_Storage, 'a')
+            f.write("%s," %Delay_Confidence_rightside)
+            f.close()
+            
+            f = open("%s/Confidenceinterval_Left_Droprate" %Interval_Storage, 'a')
+            f.write("%s,"%Droprate_Confidence_leftside)
+            f.close()
+            
+            f = open("%s/Confidenceinterval_Right_Droprate" %Interval_Storage, 'a')
+            f.write("%s,"%Droprate_Confidence_rightside)
+            f.close()
+            
+            f = open("%s/Confidenceinterval_Left_Overhead" %Interval_Storage, 'a')
+            f.write("%f," %Overhead_Confidence_leftside)
+            f.close()
+            
+            f = open("%s/Confidenceinterval_Right_Overhead" %Interval_Storage, 'a')
+            f.write("%f," %Overhead_Confidence_rightside)
+            f.close()
+                
                 
             #Write to file - Is currently placed in the upper folder as in Results/{Protocol}/{Test_type} where the tests run for that configuration are placed.
             #Test_type could here be a specific amount of nodes.

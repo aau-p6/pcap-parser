@@ -65,10 +65,18 @@ string File_name = "Results/OLSR";
 
 void write(string tekst){
     string fil_navn = File_name + "/Logdata.txt";
-    NS_LOG_UNCOND(fil_navn);
     ofstream myfile;
     myfile.open(fil_navn, ios::app);
-    myfile << tekst << "\n";
+    myfile << tekst;
+    myfile.close();    
+    
+}
+
+void writestamp(Time stamp){
+    string fil_navn = File_name + "/Logdata.txt";
+    ofstream myfile;
+    myfile.open(fil_navn, ios::app);
+    myfile << stamp << "\n";
     myfile.close();    
     
 }
@@ -82,7 +90,6 @@ string Timestamp(){
 auto p1 = std::chrono::system_clock::now();
 auto p2 = p1 - std::chrono::hours(24);
 auto tid = chrono::duration_cast<std::chrono::nanoseconds>(p2.time_since_epoch()).count();
-NS_LOG_UNCOND(tid);
 return to_string(tid);
 }
 
@@ -91,16 +98,18 @@ return to_string(tid);
 
 void ReceivePacket (Ptr<Socket> socket)
 {
+    auto stamp = Now();
+    NS_LOG_UNCOND(stamp);
     //NS_LOG_UNCOND ("Received one packet from");
     Ptr<Packet> packet;
     while (packet = socket->Recv ()){
     //NS_LOG_UNCOND(packet->GetUid());
     //cout << packet->GetUid();
-    string stamp = Timestamp();
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
-    string tekst = "Received Pakke Uid, " + to_string(uid) + ", time , " + stamp;
+    string tekst = "Received Pakke Uid, " + to_string(uid) + ", time , ";
     write(tekst);
+    writestamp(stamp);
     
         //string info = "Packet Uid:" + Uid;
         //info = info + "\n";
@@ -138,7 +147,7 @@ void ReceivePacket (Ptr<Socket> socket)
 static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
                              int pktCount, Time pktInterval)
 {
-
+    
     if(pktCount > 0){
       //Due to the increased resolution of the randomnummer we use modulus the size of vector to ensure no out of bounds
       int v = static_cast<int>(Randomnummer()) % static_cast<int>(VectorSource.size()) ;
@@ -149,13 +158,14 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
       //Ptr<ns3::Tag> tag = ;
       Ptr<Packet> packet = Create<Packet> (pktSize); 
       socket->Send (packet);
+      auto stamp = Now();
+      NS_LOG_UNCOND(stamp);
       NS_LOG_UNCOND ("Sending one packet!");
-      
-    string stamp = Timestamp();
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
-    string tekst = "Sending Pakke Uid, " + to_string(uid) + ", time , " + stamp;
+    string tekst = "Sending Pakke Uid, " + to_string(uid) + ", time , ";
     write(tekst);
+    writestamp(stamp);
 
       pktInterval = interPacketInterval;
       Simulator::Schedule (pktInterval, &GenerateTraffic,
@@ -178,7 +188,7 @@ int main (int argc, char *argv[])
   std::string phyMode ("DsssRate1Mbps");
   //double rss = -90;  // -dBm
   uint32_t packetSize = 1000; // bytes
-  uint32_t numPackets = 20;
+  uint32_t numPackets = 2;
   numPacketChildren = numPackets;
   uint32_t sinkNode = 0; // Node der modtager (Gateway)
   uint32_t sourceNode = 1;
@@ -191,7 +201,7 @@ int main (int argc, char *argv[])
   int nodeSpeed = 20;
   int nodePause = 0;
   int Run_number = 1;
-  string File_name = "Results/Experimental";
+  File_name = "Results/Experimental";
   uint32_t step =100;
   unsigned int seed = 1234;
   uint32_t numGW = 1;

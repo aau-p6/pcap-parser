@@ -33,6 +33,10 @@
 #include "ns3/rng-seed-manager.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/file-helper.h"
+#include "ns3/aodv-module.h"
+#include "ns3/olsr-module.h"
+#include "ns3/dsdv-module.h"
+#include "ns3/dsr-module.h"
 
 
 
@@ -63,8 +67,8 @@ string File_name = "Results/OLSR";
 }
 
 
-void write(string tekst){
-    string fil_navn = File_name + "/Logdata.txt";
+void write(string tekst, string type){
+    string fil_navn = File_name + "/" + type +"Logdata.txt";
     ofstream myfile;
     myfile.open(fil_navn, ios::app);
     myfile << tekst;
@@ -72,8 +76,8 @@ void write(string tekst){
     
 }
 
-void writestamp(Time stamp){
-    string fil_navn = File_name + "/Logdata.txt";
+void writestamp(Time stamp, string type){
+    string fil_navn = File_name + "/" + type +"Logdata.txt";
     ofstream myfile;
     myfile.open(fil_navn, ios::app);
     myfile << stamp << "\n";
@@ -108,8 +112,8 @@ void ReceivePacket (Ptr<Socket> socket)
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
     string tekst = "Received Pakke Uid, " + to_string(uid) + ", time , ";
-    write(tekst);
-    writestamp(stamp);
+    write(tekst, "Received");
+    writestamp(stamp, "Received");
     
         //string info = "Packet Uid:" + Uid;
         //info = info + "\n";
@@ -164,8 +168,8 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
     string tekst = "Sending Pakke Uid, " + to_string(uid) + ", time , ";
-    write(tekst);
-    writestamp(stamp);
+    write(tekst, "Sending");
+    writestamp(stamp, "Sending");
 
       pktInterval = interPacketInterval;
       Simulator::Schedule (pktInterval, &GenerateTraffic,
@@ -183,12 +187,16 @@ Simulator::Schedule (pktInterval, &GenerateTrafficChild,
     }
 }
 
+
+
+
+
 int main (int argc, char *argv[])
 {
   std::string phyMode ("DsssRate1Mbps");
   //double rss = -90;  // -dBm
   uint32_t packetSize = 1000; // bytes
-  uint32_t numPackets = 2;
+  uint32_t numPackets = 50;
   numPacketChildren = numPackets;
   uint32_t sinkNode = 0; // Node der modtager (Gateway)
   uint32_t sourceNode = 1;
@@ -201,13 +209,14 @@ int main (int argc, char *argv[])
   int nodeSpeed = 20;
   int nodePause = 0;
   int Run_number = 1;
-  File_name = "Results/Experimental";
+  File_name = "Results/OLSR";
   uint32_t step =100;
   unsigned int seed = 1234;
   uint32_t numGW = 1;
   string XRange="1500.0";
   string YRange="1500.0";
   int SignalStrenght=-10;
+  string protocol = "olsr";
   
   /*Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Mode", StringValue ("Time"));
   Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Time", StringValue ("2s"));
@@ -234,6 +243,7 @@ int main (int argc, char *argv[])
   cmd.AddValue("XRange", "The size of the area in X coordinate dimension", XRange);
   cmd.AddValue("YRange", "The size of the area in Y coordinate dimension", YRange);
   cmd.AddValue("SignalStrenght", "Signal strenght used by the nodes, substracted from -94", SignalStrenght);
+  cmd.AddValue ("protocol", "Pick routing protocol", protocol);
   cmd.Parse (argc, argv);
   
 
@@ -331,18 +341,6 @@ int main (int argc, char *argv[])
   streamIndex += mobility.AssignStreams (nodes, streamIndex);
   NS_UNUSED (streamIndex);
   
-  OlsrHelper aodv;
-  Ipv4StaticRoutingHelper StaticRouting;
-  
-  Ipv4ListRoutingHelper list;
-  list.Add (StaticRouting, 0);
-  list.Add (aodv,10);
-  aodv::RoutingProtocol testing;
-  
-  InternetStackHelper internet;
-  internet.SetRoutingHelper (list); // has effect on the next Install ()
-  internet.Install (c);
-  
   MobilityHelper GWmobility;
   GWmobility.SetPositionAllocator ("ns3::GridPositionAllocator",
                                  "MinX", DoubleValue (200.0),
@@ -353,6 +351,48 @@ int main (int argc, char *argv[])
                                  "LayoutType", StringValue ("RowFirst"));
   GWmobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   GWmobility.Install (GW);
+  
+  OlsrHelper olsr;
+  AodvHelper aodv;
+  DsdvHelper dsdv;
+  DsrHelper dsr; // drs routing modul does not support flow monitor (require Ipv4 or Ipv6)
+  DsrMainHelper dsrMain;
+  Ipv4ListRoutingHelper list;
+  InternetStackHelper internet;
+  
+  if (protocol == "dsr")
+  {
+    internet.Install (c);
+    dsrMain.Install (dsr, c);
+  }
+  else if (protocol == "aodv")
+  {
+    list.Add (aodv, 10);
+    internet.SetRoutingHelper (list);
+    internet.Install (c);
+    aodv.AssignStreams(c, 5);
+  }
+  else if (protocol == "olsr")
+  {
+    list.Add (olsr, 10);
+    internet.SetRoutingHelper (list);
+    internet.Install (c);
+    olsr.AssignStreams(c, 5);
+  }
+  else if (protocol == "dsdv")
+  {
+    list.Add (dsdv, 10);
+    internet.SetRoutingHelper (list);
+    internet.Install (c);
+    //dsdv.AssignStreams(cGW, 5);
+  }
+  else
+  {
+    NS_FATAL_ERROR ("No such protocol:" << protocol);
+}
+  
+  
+  
   
   
   
@@ -407,23 +447,24 @@ int main (int argc, char *argv[])
   // Tracing
   string pcap = File_name + "/wifi-simple-adhoc";
   wifiPhy.EnablePcap (pcap, devices);
-  
-  string xml = File_name  + "/OLSR.xml";  
+  string xml = File_name  + "/" + protocol +".xml";  
   Ptr<FlowMonitor> flowMonitor;
   FlowMonitorHelper flowHelper;
+  
+  if (protocol != "dsr"){
+
   flowMonitor = flowHelper.InstallAll();
+  }
   
   uint32_t Maxtid = (numPackets * (max_packetinterval+min_packetinterval)) + numPackets;
   NS_LOG_UNCOND(Maxtid);
   Simulator::Stop (Seconds (Maxtid));
   Simulator::Run ();
-  flowMonitor->SerializeToXmlFile(xml, true, true);
   
+  if (protocol != "dsr"){
+  flowMonitor->SerializeToXmlFile(xml, true, true);
+  }
   Simulator::Destroy ();
 
   return 0;
 }
-
-
-
-

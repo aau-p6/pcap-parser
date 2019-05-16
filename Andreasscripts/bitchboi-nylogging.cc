@@ -90,12 +90,27 @@ void writestamp(Time stamp, string type){
 
 
 
-string Timestamp(){
-auto p1 = std::chrono::system_clock::now();
-auto p2 = p1 - std::chrono::hours(24);
-auto tid = chrono::duration_cast<std::chrono::nanoseconds>(p2.time_since_epoch()).count();
-return to_string(tid);
+static void SavePosition(NodeContainer container, int saveInterval)
+{
+  std::ofstream myfile;
+  std::string filename = File_name + "/time" + "/p6Position" + std::to_string((int) Simulator::Now().GetSeconds()) + ".txt";
+  myfile.open(filename);
+  //myfile << Simulator::Now() << std::endl;
+  for (NodeContainer::Iterator j = container.Begin ();
+       j != container.End (); ++j)
+      {
+        Ptr<Node> object = *j;
+        Ptr<MobilityModel> position = object->GetObject<MobilityModel> ();
+        NS_ASSERT (position != 0);
+        Vector pos = position->GetPosition ();
+        std::cout << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
+        //myfile << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << std::endl;
+        myfile << object->GetId() <<"," << pos.x << "," << pos.y << std::endl;
+      }
+  myfile.close();
+  Simulator::Schedule (Seconds (saveInterval), &SavePosition, container, saveInterval);
 }
+
 
 
 
@@ -456,6 +471,7 @@ int main (int argc, char *argv[])
   flowMonitor = flowHelper.InstallAll();
   }
   
+  Simulator::Schedule (Seconds (0), &SavePosition, c, 10);
   uint32_t Maxtid = (numPackets * (max_packetinterval+min_packetinterval)) + numPackets;
   NS_LOG_UNCOND(Maxtid);
   Simulator::Stop (Seconds (Maxtid));

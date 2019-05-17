@@ -6,10 +6,8 @@ This repo holds scripts for parsing the pcap output files of our ns3 sims
 It is recommended to use this in a [virtual environment](https://docs.python.org/3/library/venv.html) if you want to contribute.
 
 ```bash
-sudo dnf install wireshark-qt # fedora
-sudo dnf install libpcap-devel # fedora
-sudo apt install libpcap-dev # Ubuntu
-sudo apt install tshark #Ubuntu
+sudo dnf install wireshark-qt libpcap-devel # fedora
+sudo apt install libpcap-dev tshark # Ubuntu
 ```
 
 to install python requirements run:

@@ -59,6 +59,8 @@ def functest(dir_name, run_number, node_count):
                    dir_name,
                    node_count)
 
+    print(command)
+
     os.popen(command, 'w', 0)
 
 

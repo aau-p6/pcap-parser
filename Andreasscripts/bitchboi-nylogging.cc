@@ -60,6 +60,7 @@ double min_random_interval = 0.0;
 double max_random_interval = 10.0;
 float min_packetinterval = 0.5;
 int max_packetinterval = 2;
+NodeContainer c;
 string File_name = "Results/OLSR";
 
   // Call this function everytime a random number is desired
@@ -95,8 +96,10 @@ void writestamp(Time stamp){
 
 
 
-static void SavePosition(NodeContainer container, int saveInterval)
+static void SavePosition(NodeContainer container)
 {
+    NS_LOG_UNCOND("watup");
+    NS_LOG_UNCOND(Simulator::Now().GetSeconds());
   std::ofstream myfile;
   std::string filename = File_name + "/time" + "/p6Position" + std::to_string((int) Simulator::Now().GetSeconds()) + ".txt";
   myfile.open(filename);
@@ -108,12 +111,11 @@ static void SavePosition(NodeContainer container, int saveInterval)
         Ptr<MobilityModel> position = object->GetObject<MobilityModel> ();
         NS_ASSERT (position != 0);
         Vector pos = position->GetPosition ();
-        std::cout << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
+        //std::cout << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
         //myfile << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << std::endl;
         myfile << object->GetId() <<"," << pos.x << "," << pos.y << std::endl;
       }
   myfile.close();
-  Simulator::Schedule (Seconds (saveInterval), &SavePosition, container, saveInterval);
 }
 
 
@@ -124,9 +126,10 @@ static void SavePosition(NodeContainer container, int saveInterval)
 
 void ReceivePacket (Ptr<Socket> socket)
 {
+    Simulator::Schedule (Seconds (0), &SavePosition, c);
     auto stamp = Now();
-    NS_LOG_UNCOND(stamp);
-    NS_LOG_UNCOND ("Received one packet!");
+    //NS_LOG_UNCOND(stamp);
+    //NS_LOG_UNCOND ("Received one packet!");
     Ptr<Packet> packet;
     while (packet = socket->Recv ()){
     //NS_LOG_UNCOND(packet->GetUid());
@@ -175,6 +178,7 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
 {
     
     if(pktCount > 0){
+      NS_LOG_UNCOND(pktCount);
       //Due to the increased resolution of the randomnummer we use modulus the size of vector to ensure no out of bounds
       int v = static_cast<int>(Randomnummer()) % static_cast<int>(VectorSource.size()) ;
       socket = VectorSource[v];
@@ -185,8 +189,8 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
       Ptr<Packet> packet = Create<Packet> (pktSize); 
       socket->Send (packet);
       auto stamp = Now();
-      NS_LOG_UNCOND(stamp);
-      NS_LOG_UNCOND ("Sending one packet!");
+      //NS_LOG_UNCOND(stamp);
+      //NS_LOG_UNCOND ("Sending one packet!");
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
     string tekst = "Sending Pakke Uid, " + to_string(uid) + ", time , ";
@@ -214,7 +218,7 @@ int main (int argc, char *argv[])
   std::string phyMode ("DsssRate1Mbps");
   //double rss = -90;  // -dBm
   uint32_t packetSize = 1000; // bytes
-  uint32_t numPackets = 20;
+  uint32_t numPackets = 50;
   numPacketChildren = numPackets;
   uint32_t sinkNode = 0; // Node der modtager (Gateway)
   uint32_t sourceNode = 1;
@@ -296,7 +300,7 @@ int main (int argc, char *argv[])
   
 
   
-  NodeContainer c;
+  
   c.Add(GW);
   c.Add(nodes);
 
@@ -469,19 +473,14 @@ int main (int argc, char *argv[])
     }
 
   // Tracing
-  //string pcap = File_name + "/wifi-simple-adhoc";
-  //wifiPhy.EnablePcap (pcap, devices);
-  
-  
-  
-
+  string pcap = File_name + "/wifi-simple-adhoc";
+  wifiPhy.EnablePcap (pcap, devices);
   
   
   
   
-  
-  Simulator::Schedule (Seconds (0), &SavePosition, c, 10);
-  string xml = File_name  + "/OLSR.xml";  
+  Simulator::Schedule (Seconds (0), &SavePosition, c);
+  string xml = File_name  + "/flowmonitor.xml";  
   Ptr<FlowMonitor> flowMonitor;
   FlowMonitorHelper flowHelper;
   flowMonitor = flowHelper.InstallAll();

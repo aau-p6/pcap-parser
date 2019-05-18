@@ -33,7 +33,18 @@
 #include "ns3/rng-seed-manager.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/file-helper.h"
-
+#include "ns3/csma-helper.h"
+#include "ns3/csma-channel.h"
+#include "ns3/core-module.h"
+#include "ns3/wifi-module.h"
+#include "ns3/mobility-module.h"
+#include "ns3/csma-channel.h"
+#define _USE_MATH_DEFINES
+#include "cmath"
+#include "ns3/aodv-module.h"
+#include "ns3/olsr-module.h"
+#include "ns3/dsdv-module.h"
+#include "ns3/dsr-module.h"
 
 
 using namespace ns3;
@@ -84,14 +95,29 @@ void writestamp(Time stamp){
 
 
 
-
-
-string Timestamp(){
-auto p1 = std::chrono::system_clock::now();
-auto p2 = p1 - std::chrono::hours(24);
-auto tid = chrono::duration_cast<std::chrono::nanoseconds>(p2.time_since_epoch()).count();
-return to_string(tid);
+static void SavePosition(NodeContainer container, int saveInterval)
+{
+  std::ofstream myfile;
+  std::string filename = File_name + "/time" + "/p6Position" + std::to_string((int) Simulator::Now().GetSeconds()) + ".txt";
+  myfile.open(filename);
+  //myfile << Simulator::Now() << std::endl;
+  for (NodeContainer::Iterator j = container.Begin ();
+       j != container.End (); ++j)
+      {
+        Ptr<Node> object = *j;
+        Ptr<MobilityModel> position = object->GetObject<MobilityModel> ();
+        NS_ASSERT (position != 0);
+        Vector pos = position->GetPosition ();
+        std::cout << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
+        //myfile << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << std::endl;
+        myfile << object->GetId() <<"," << pos.x << "," << pos.y << std::endl;
+      }
+  myfile.close();
+  Simulator::Schedule (Seconds (saveInterval), &SavePosition, container, saveInterval);
 }
+
+
+
 
 
 
@@ -100,7 +126,7 @@ void ReceivePacket (Ptr<Socket> socket)
 {
     auto stamp = Now();
     NS_LOG_UNCOND(stamp);
-    //NS_LOG_UNCOND ("Received one packet from");
+    NS_LOG_UNCOND ("Received one packet!");
     Ptr<Packet> packet;
     while (packet = socket->Recv ()){
     //NS_LOG_UNCOND(packet->GetUid());
@@ -136,7 +162,7 @@ void ReceivePacket (Ptr<Socket> socket)
       Simulator::Schedule (pktInterval, &GenerateTrafficChild,
                            socket, pktSize,pktCount - 1, pktInterval);
       
-      //NS_LOG_UNCOND ("Sending one packet!");
+      NS_LOG_UNCOND ("Sending one packet!");
     }
   else
     { 
@@ -201,13 +227,15 @@ int main (int argc, char *argv[])
   int nodeSpeed = 20;
   int nodePause = 0;
   int Run_number = 1;
-  File_name = "Results/Experimental";
   uint32_t step =100;
   unsigned int seed = 1234;
   uint32_t numGW = 1;
   string XRange="1500.0";
   string YRange="1500.0";
   int SignalStrenght=-10;
+  string protocol = "OLSR";
+  File_name = "Results/" + protocol;
+  NS_LOG_UNCOND(File_name);
   
   /*Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Mode", StringValue ("Time"));
   Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Time", StringValue ("2s"));
@@ -234,6 +262,7 @@ int main (int argc, char *argv[])
   cmd.AddValue("XRange", "The size of the area in X coordinate dimension", XRange);
   cmd.AddValue("YRange", "The size of the area in Y coordinate dimension", YRange);
   cmd.AddValue("SignalStrenght", "Signal strenght used by the nodes, substracted from -94", SignalStrenght);
+  cmd.AddValue("protocol","What routing protocol should be used for the simulation", protocol);
   cmd.Parse (argc, argv);
   
 
@@ -259,13 +288,13 @@ int main (int argc, char *argv[])
   NS_LOG_UNCOND ("Seed: " << seed );
   NS_LOG_UNCOND ("Run: " << Run_number );
 
-  
+  NodeContainer GW;
+  GW.Create(numGW);
   
   NodeContainer nodes;
   nodes.Create (numNodes-1);
   
-  NodeContainer GW;
-  GW.Create(numGW);
+
   
   NodeContainer c;
   c.Add(GW);
@@ -273,7 +302,7 @@ int main (int argc, char *argv[])
 
   
   
-  // The below set of helpers will help us to put together the wifi NICs we want
+  
   WifiHelper wifi;
   if (verbose)
     {
@@ -304,8 +333,9 @@ int main (int argc, char *argv[])
   // Set it to adhoc mode
   wifiMac.SetType ("ns3::AdhocWifiMac");
   NetDeviceContainer devices = wifi.Install (wifiPhy, wifiMac, c);
-
-
+  
+  
+  
   MobilityHelper mobility;
   int64_t streamIndex = 0;
   
@@ -331,22 +361,13 @@ int main (int argc, char *argv[])
   streamIndex += mobility.AssignStreams (nodes, streamIndex);
   NS_UNUSED (streamIndex);
   
-  OlsrHelper aodv;
-  Ipv4StaticRoutingHelper StaticRouting;
   
-  Ipv4ListRoutingHelper list;
-  list.Add (StaticRouting, 0);
-  list.Add (aodv,10);
-  aodv::RoutingProtocol testing;
-  
-  InternetStackHelper internet;
-  internet.SetRoutingHelper (list); // has effect on the next Install ()
-  internet.Install (c);
+
   
   MobilityHelper GWmobility;
   GWmobility.SetPositionAllocator ("ns3::GridPositionAllocator",
-                                 "MinX", DoubleValue (200.0),
-                                 "MinY", DoubleValue (200.0),
+                                 "MinX", DoubleValue (0.0),
+                                 "MinY", DoubleValue (0.0),
                                  "DeltaX", DoubleValue (step),
                                  "DeltaY", DoubleValue (0),
                                  "GridWidth", UintegerValue (numGW),
@@ -355,6 +376,49 @@ int main (int argc, char *argv[])
   GWmobility.Install (GW);
   
   
+  
+  
+  
+  
+  
+    OlsrHelper olsr;
+  AodvHelper aodv;
+  DsdvHelper dsdv;
+  DsrHelper dsr; // drs routing modul does not support flow monitor (require Ipv4 or Ipv6)
+  DsrMainHelper dsrMain;
+  Ipv4ListRoutingHelper list;
+  InternetStackHelper internet;
+  
+  if (protocol == "DSR")
+  {
+    internet.Install (c);
+    dsrMain.Install (dsr, c);
+  }
+  else if (protocol == "AODV")
+  {
+    list.Add (aodv, 10);
+    internet.SetRoutingHelper (list);
+    internet.Install (c);
+    aodv.AssignStreams(c, 5);
+  }
+  else if (protocol == "OLSR")
+  {
+    list.Add (olsr, 10);
+    internet.SetRoutingHelper (list);
+    internet.Install (c);
+    olsr.AssignStreams(c, 5);
+  }
+  else if (protocol == "DSDV")
+  {
+    list.Add (dsdv, 10);
+    internet.SetRoutingHelper (list);
+    internet.Install (c);
+    //dsdv.AssignStreams(cGW, 5);
+  }
+  else
+  {
+    NS_FATAL_ERROR ("No such protocol:" << protocol);
+}
   
   
 
@@ -408,6 +472,15 @@ int main (int argc, char *argv[])
   //string pcap = File_name + "/wifi-simple-adhoc";
   //wifiPhy.EnablePcap (pcap, devices);
   
+  
+  
+
+  
+  
+  
+  
+  
+  Simulator::Schedule (Seconds (0), &SavePosition, c, 10);
   string xml = File_name  + "/OLSR.xml";  
   Ptr<FlowMonitor> flowMonitor;
   FlowMonitorHelper flowHelper;

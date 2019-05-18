@@ -102,7 +102,7 @@ def flow_monitor(protocol, node_count, run):
                    'Packet drop rate for this test was {}\n'
                    '\nNew test data will come in \n\n'
                    )
-            txt.format(node_count, run,
+            txt = txt.format(node_count, run,
                        packets_sent,
                        packets_received,
                        average_end_to_end_delay,

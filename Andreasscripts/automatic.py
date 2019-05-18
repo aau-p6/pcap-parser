@@ -5,6 +5,7 @@ from threading import Thread
 import threading
 import time
 import sys
+import pprint
 
 MaxThreads = 7
 Protocol_types = ['AODV', 'OLSR', 'DSR', 'DSDV']
@@ -45,7 +46,7 @@ def functest(dir_name, run_number, node_count):
     # threads will create the directory but when the simulation normally would be done
     # nothing can be found in the directory
     if not os.path.isdir(dir_name):
-        os.makedirs('%s' % dir_name)
+        os.makedirs(dir_name)
 
     command = ('./waf --run "bitchboi '
                '--Run_number={} '
@@ -55,7 +56,7 @@ def functest(dir_name, run_number, node_count):
                '--YRange=500 '
                '--SignalStrenght=0"')
 
-    command.format(run_number,
+    command = command.format(run_number,
                    dir_name,
                    node_count)
 

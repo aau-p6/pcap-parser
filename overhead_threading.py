@@ -94,18 +94,26 @@ def flow_monitor(protocol, node_count, run):
 
         mutex.acquire()
         try:
+            txt = ('Vi er nu i fil {}/{}\n'
+                   'Total amount of packets sent {}\n'
+                   'Total amount of packets received {}\n'
+                   'The Average end to end delay was {} nanoseconds\n'
+                   'Overhead for this test was {} percent \n'
+                   'Packet drop rate for this test was {}\n'
+                   '\nNew test data will come in \n\n'
+                   )
+            txt.format(node_count, run,
+                       packets_sent,
+                       packets_received,
+                       average_end_to_end_delay,
+                       overhead_data,
+                       packet_drop_rate)
+
             f = open('{}/Collected_data.txt'.format(data_storage), 'a')
-            f.write('Vi er nu i fil {}/{}\n'.format(node_count, statistic_tes))
-            f.write(
-                'Total amount of packets sent %d\n Toal amount of packets received %d\nThe Average end to end delay was %d nanoseconds\n' % (
-                PacketsSent, PacketsReceived, Average_EndtoEndDelay))
-            f.write('Overhead for this test was %d procent \nPacket drop rate for this test was %d\n' % (
-            OverheadData, Packet_drop_rate))
-            f.write("\nNew test data will come in \n\n")
+            f.write(txt)
             f.close()
         finally:
             mutex.release()
-
 
 
 def total_data_sent(path):

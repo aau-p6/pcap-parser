@@ -61,11 +61,11 @@ def main():
     for test_typer in os.walk('.').next()[1]:
         #Directory wise this is /ns-3-dev/Results/OLSR for example
         for test_typer_count in os.walk("%s" % (test_typer)).next()[1]:
-            # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5 where the last directory is the different tests as specified in automatic_stripped.py
+            # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5 where the last directory is the different tests as specified in automatic.py
             #Further down we now are in the directory of extra tests for the same test in order to make statistical analysis on it
             if os.path.isdir('%s/%s' % (test_typer, test_typer_count )) == True:
                 for statistic_test_count in os.walk("%s/%s" % ( test_typer, test_typer_count)).next()[1]: 
-                # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5/test5 where the last directory will maximum be the run_number specified in automatic_stripped.py
+                # Directory wise this is /ns-3-dev/Results/OLSR/OLSR5/test5 where the last directory will maximum be the run_number specified in automatic.py
                 #We define the specific directory to look into for the thread.
                     dir_navn = test_typer + "/" + test_typer_count + "/" +statistic_test_count
                     Matrixgenerator(dir_navn)

@@ -36,7 +36,7 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                             Unlisted_Dropped = 0
                             EndtoEndDelay = 0
                             Average_EndtoEndDelay = -1
-                            OverheadData = -1
+                            OverheadData = 0
                             Packet_drop_rate = 0
     # We will go through each individual Flow_ID and find their respective data and sum it up
 
@@ -59,9 +59,11 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                     sti = test_typer + "/"+ test_typer_count + "/" + statistic_test_count
                     print(sti)
                     SamletData = int(AltDataSendt(sti))
-                    if DataReceived !=0:
-                        OverheadData = (SamletData/DataReceived) *100
-                    Packet_drop_rate = (1-(PacketsReceived*1.0)/(PacketsSent*1.0)) * 100.0
+                    if DataReceived != 0:
+                        OverheadData = (((SamletData*1.0) -DataReceived*1.0)/(DataReceived*1.0))*100.0
+                    print(OverheadData)
+                    Packet_drop_rate = round((1.0-(PacketsReceived*1.0)/(PacketsSent*1.0)) * 100.0)
+                    print (Packet_drop_rate)
                     if len(Flow_Ids) != 0:
                     #We save a collecte_data.txt in each of the directories of the different tests run
                         Data_storage =  test_typer +"/" + test_typer_count
@@ -71,7 +73,7 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                         mutex.acquire()
                         try:
                             f= open('%sHistogramDroprate.txt' %(Histogram_storage) , 'a')
-                            f.write("%d," % Average_EndtoEndDelay)
+                            f.write("%f," % Average_EndtoEndDelay)
                             f.close()
                         finally:
                             mutex.release()

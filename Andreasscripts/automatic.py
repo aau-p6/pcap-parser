@@ -1,12 +1,11 @@
+#!/usr/bin/env python
+
 import os
-import signal
-import subprocess
 from threading import Thread
 import threading
 import time
 import sys
-import socket
-import errno
+
 MaxThreads = 7
 Protocol_types = ['AODV', 'OLSR', 'DSR', 'DSDV']
 data_rates = []

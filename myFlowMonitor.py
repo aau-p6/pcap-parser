@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import os
+import pcapy
 import math
 
 def treatData(sendID,sendTime,rID,rTime):
@@ -14,9 +15,9 @@ def treatData(sendID,sendTime,rID,rTime):
     print("packets send: {}\npackets received: {}".format(len(sendID),len(rID)))
     dropRate = round(((1-len(rID)/len(sendID))*100))
     print("Droperate: {}".format(dropRate))
-    overhead = round(((len(sendID)-len(rID))/len(rID)*100))
-    print('Overhead: {}'.format(overhead))
     print("Average end-to-end delay is: {}".format(endToEndDelay))
+    samletDat = AltDataSendt("/home/jonas/Desktop/Results/Experimental/")
+    print(samletDat)
 
     
 
@@ -61,5 +62,34 @@ def getData ():
     print("Receiving time: {} \n".format(receivedTime))
     
     treatData(sendingID,sendingTime,receivedID,receivedTime)
+
+def AltDataSendt(path):
+    File_list = []
+    PcapFiles =[]
+    Overheadsum = 0
+    Samlet = 0
+ #Vi finder alle Pcap filer i den folderen vi er i
+    substring = '.pcap'
+    for Allfiles in os.popen('ls %s' %path):
+        if substring in Allfiles:
+            PcapFiles.append(Allfiles) 
+ #Vi kan nu finde alt data sendt som er i pcap filen.
+    for pcap in PcapFiles:
+ #We read one pcap file at a time.
+        fil = path + "/" + pcap.rstrip()
+        reader = pcapy.open_offline("%s" % fil)
+ #Vi finder hvor mange frames der er i den givne pcap filen
+        Lenght = os.popen('tshark -r %s | wc -l' % fil).read()
+        PcapLenght = int(Lenght)
+  #Vi koerer igennem alle frames/pakker og finder deres laengder i bytes
+        for x in range(0, PcapLenght):
+            (header, payload) = reader.next();
+      # Summer alle frames laengder
+      
+            Overheadsum = Overheadsum + header.getlen();
+    Samlet = Samlet + Overheadsum
+    print(Samlet)
+    return(Overheadsum)
+
 
 getData()

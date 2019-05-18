@@ -21,13 +21,13 @@ def treatData(sendID,sendTime,rID,rTime):
 
     
 
-def getData ():
+def getData (dataPath):
     sendingID = []
     sendingTime = []
     receivedID = []
     receivedTime = []
 
-    myFile = open("/home/jonas/Documents/p6/flowmonitor replacement/SendingLogdata.txt","r")
+    myFile = open("{}SendingLogdata.txt".format(dataPath),"r")
     for line in myFile:
         fields = line.split(", ")
         if fields[1].isdigit():
@@ -41,7 +41,7 @@ def getData ():
     sendingTime = list(map(float, sendingTime))
     sendingTime = list(map(int, sendingTime))
 
-    myFile = open("/home/jonas/Documents/p6/flowmonitor replacement/ReceivedLogdata.txt","r")
+    myFile = open("{}ReceivedLogdata.txt".format(dataPath),"r")
     for line in myFile:
         fields = line.split(", ")
         if fields[1].isdigit():
@@ -92,4 +92,4 @@ def AltDataSendt(path):
     return(Overheadsum)
 
 
-getData()
+getData("/home/jonas/Documents/p6/flowmonitor replacement/")

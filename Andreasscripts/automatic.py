@@ -47,7 +47,7 @@ def functest(dir_name, run_number, node_count):
     if not os.path.isdir(dir_name):
         os.makedirs('%s' % dir_name)
 
-    command = ('./waf --run "scratch/bitchboi '
+    command = ('./waf --run "bitchboi '
                '--Run_number={} '
                '--File_name={} '
                '--numNodes={} '

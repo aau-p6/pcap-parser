@@ -41,9 +41,22 @@ def functest(dir_name, run_number, node_count):
     # Error at times occur where some of the threads will terminate.
     # threads will create the directory but when the simulation normally would be done
     # nothing can be found in the directory
-    if os.path.isdir(dir_name) != True:
-        os.makedirs ('%s' % dir_name)
-    os.popen('./waf --run "scratch/bitchboi --Run_number={} --File_name={} --numNodes={} --XRange=500 --YRange=500 --SignalStrenght=0"'.format(run_number, dir_name, node_count), 'w', 0)
+    if not os.path.isdir(dir_name):
+        os.makedirs('%s' % dir_name)
+
+    command = ('./waf --run "scratch/bitchboi '
+               '--Run_number={}'
+               '--File_name={}'
+               '--numNodes={}'
+               '--XRange=500'
+               '--YRange=500'
+               '--SignalStrenght=0"')
+
+    command.format(run_number,
+                   dir_name,
+                   node_count)
+
+    os.popen(command, 'w', 0)
 
 
 def autotest():

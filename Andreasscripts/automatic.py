@@ -11,7 +11,11 @@ MaxThreads = 7
 Protocol_types = ['AODV', 'OLSR', 'DSR', 'DSDV']
 data_rates = []
 
-ns3_dir = '/home/mikkel/ns3workspace/ns-3-allinone/ns-3-dev'
+if len(sys.argv) > 1:
+    ns3_dir = sys.argv[1]
+else:
+    ns3_dir = '~/ns3workspace/ns-3-allinone/ns-3-dev'
+
 nodes_cfg = {'start': 20, 'stop': 100, 'step': 10}
 runs = 50
 

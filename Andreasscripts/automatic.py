@@ -37,28 +37,28 @@ runs = 50
 # This number MUST be an integer due to modulus
 
 
-def functest(dirnavn, RunNumber, numNodes):
+def functest(dir_name, run_number, node_count):
     # Error at times occur where some of the threads will terminate.
     # threads will create the directory but when the simulation normally would be done
     # nothing can be found in the directory
-    if os.path.isdir(dirnavn) != True:
-        os.makedirs ('%s' % dirnavn)
-    os.popen('./waf --run "scratch/bitchboi --Run_number=%d --File_name=%s --numNodes=%d --XRange=500 --YRange=500 --SignalStrenght=0"' % (RunNumber, dirnavn, numNodes), 'w', 0)
+    if os.path.isdir(dir_name) != True:
+        os.makedirs ('%s' % dir_name)
+    os.popen('./waf --run "scratch/bitchboi --Run_number={} --File_name={} --numNodes={} --XRange=500 --YRange=500 --SignalStrenght=0"'.format(run_number, dir_name, node_count), 'w', 0)
 
 
 def autotest():
     root = "Results/OLSR"
     if not os.path.isdir(root):
         os.makedirs(root)
-    for nodes in range(nodes_cfg['start'], nodes_cfg['stop'], nodes_cfg['step']):
-        dir_name = root + "/OLSR" + str(nodes)
+    for node_count in range(nodes_cfg['start'], nodes_cfg['stop'], nodes_cfg['step']):
+        dir_name = root + "/OLSR" + str(node_count)
         for i in range(runs):
             run_number = (i + 1)
             run_name = dir_name + "/test" + str(run_number)
             while True:
                 time.sleep(2)
                 if threading.activeCount() < MaxThreads:
-                    x = Thread(target=functest, args=(run_name, run_number, nodes,))
+                    x = Thread(target=functest, args=(run_name, run_number, node_count,))
                     x.start()
                     # functest(run_name, run_number, gtc)
                     break    

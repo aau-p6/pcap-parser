@@ -45,11 +45,11 @@ def functest(dir_name, run_number, node_count):
         os.makedirs('%s' % dir_name)
 
     command = ('./waf --run "scratch/bitchboi '
-               '--Run_number={}'
-               '--File_name={}'
-               '--numNodes={}'
-               '--XRange=500'
-               '--YRange=500'
+               '--Run_number={} '
+               '--File_name={} '
+               '--numNodes={} '
+               '--XRange=500 '
+               '--YRange=500 '
                '--SignalStrenght=0"')
 
     command.format(run_number,

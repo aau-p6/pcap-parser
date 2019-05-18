@@ -29,30 +29,32 @@ Datarates = []
 
 
             
-def functest(dirnavn, RunNumber, numNodes):
+def functest(dirnavn, RunNumber, numNodes, protocol):
     #Error at times occur where some of the threads will terminate.
     #threads will create the directory but when the simulation normally would be done nothing can be found in the directory
     if os.path.isdir(dirnavn) != True:
         os.makedirs ('%s' % dirnavn)
-    os.popen('./waf --run "scratch/bitchboi --Run_number=%d --File_name=%s --numNodes=%d --XRange=500 --YRange=500 --SignalStrenght=0"' % (RunNumber, dirnavn, numNodes), 'w', 0)
+        if os.path.isdir("%s/time"%dirnavn) != True:
+            os.makedirs("%s/time"%dirnavn)
+    os.popen('./waf --run "scratch/bitchboi-nylogging --Run_number=%d --File_name=%s --numNodes=%d --protocol=%s"' % (RunNumber, dirnavn, numNodes,protocol), 'w', 0)
     
 def autotest():
-    root = "Results/OLSR"
-    if os.path.isdir(root) != True:
-        os.makedirs('%s' % root)
-    for gtc in range(2):
-        numNodes= ((gtc*2)+8)*10
-        dirnavn = root + "/OLSR" + str(numNodes)
-        for i in range(50):
-            RunNumber = (i + 1)
-            runname = dirnavn + "/test" + str(RunNumber)
-            while True:
-                time.sleep(2)
-                if threading.activeCount() < MaxThreads:
-                    x = Thread(target = functest, args= (runname, RunNumber, numNodes,))
-                    x.start()
-                #functest(runname, RunNumber, gtc)
-                    break
+    for Protocol in Protocol_types:
+        root = "Results/" + Protocol
+        if os.path.isdir(root) != True:
+            os.makedirs('%s' % root)
+        for param in range(2):
+            numNodes= (param+1)*10
+            dirnavn = root + "/" + Protocol + str(numNodes)
+            for i in range(5):
+                RunNumber = (i + 1)
+                runname = dirnavn + "/test" + str(RunNumber)
+                while True:
+                    time.sleep(2)
+                    if threading.activeCount() < MaxThreads:
+                        x = Thread(target = functest, args= (runname, RunNumber, numNodes, Protocol))
+                        x.start()
+                        break
     
     
 

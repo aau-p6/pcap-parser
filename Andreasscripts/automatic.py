@@ -61,9 +61,9 @@ def autotest():
                     x = Thread(target=functest, args=(run_name, run_number, nodes,))
                     x.start()
                     # functest(run_name, run_number, gtc)
-                    break
-    
-    
+                    break    
+
+
 os.chdir(ns3_dir)
 autotest()
 

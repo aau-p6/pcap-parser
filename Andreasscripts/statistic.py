@@ -33,6 +33,12 @@ def statistic():
             Worst_delay = 0
             Worst_Droprate = 0
             Xnummer = []
+            Delay_Confidence_leftside = 0
+            Delay_Confidence_rightside = 0
+            Overhead_Confidence_leftside = 0
+            Overhead_Confidence_rightside = 0
+            Droprate_Confidence_leftside = 0
+            Droprate_Confidence_rightside = 0
             # We will now extract the actual number for the metrics
             #These are extracted by saving which lines contain the relevant info.
             tempDelays = os.popen("grep nanoseconds %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
@@ -83,7 +89,6 @@ def statistic():
             #Overhead
             if len(Overhead) !=0:
                 for entry in Overhead:
-                for entry in Overhead:
                     if Worst_Overhead < float(entry):
                         Worst_Overhead = float(entry)
                     OverheadAverage = OverheadAverage + (float(entry)-100)
@@ -97,6 +102,7 @@ def statistic():
                 
             #Droprate
             #We first create a Droprate list by finding the droprate for each test
+            print len(PacketsReceived)
             if len(PacketsReceived) !=0:
                 for i in range(len(PacketsReceived)):
                     Droprate.append((1 * 1.0 - (int(PacketsReceived[i]) *1.0/ int(PacketsSent[i] )*1.0))*100) 
@@ -136,18 +142,18 @@ def statistic():
             f = open("%s/Confidenceinterval_Right_Droprate.txt" %Interval_Storage, 'a')
             f.write("%s,"%Droprate_Confidence_rightside)
             f.close()
+            if len(Overhead) != 0:
+                f = open("%s/Confidenceinterval_Left_Overhead.txt" %Interval_Storage, 'a')
+                f.write("%f," %Overhead_Confidence_leftside)
+                f.close()
             
-            f = open("%s/Confidenceinterval_Left_Overhead.txt" %Interval_Storage, 'a')
-            f.write("%f," %Overhead_Confidence_leftside)
-            f.close()
+                f = open("%s/Average_Overhead.txt" %Interval_Storage, 'a')
+                f.write("%s,"%OverheadAverage)
+                f.close()
             
-            f = open("%s/Average_Overhead.txt" %Interval_Storage, 'a')
-            f.write("%s,"%OverheadAverage)
-            f.close()
-            
-            f = open("%s/Confidenceinterval_Right_Overhead.txt" %Interval_Storage, 'a')
-            f.write("%f," %Overhead_Confidence_rightside)
-            f.close()
+                f = open("%s/Confidenceinterval_Right_Overhead.txt" %Interval_Storage, 'a')
+                f.write("%f," %Overhead_Confidence_rightside)
+                f.close()
         
             for s in node_count:
                 X =''
@@ -171,7 +177,8 @@ def statistic():
             f.write("Average Delay in milliseconds %s\nStandard deviation %s\nWorstcase %s\n" % (DelayAverage, Delay_Variation, Worst_delay))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Delay_Confidence_leftside, Delay_Confidence_rightside))
             f.write("Average Overhead in Percent %s\nStandard deviation %s\nWorstcase %s\n" % (OverheadAverage, Overhead_Variation, Worst_Overhead))
-            f.write("Confidence interval was %f < theta >%f\n \n" % (Overhead_Confidence_leftside, Overhead_Confidence_rightside))
+            if len(Overhead) !=0:
+                f.write("Confidence interval was %f < theta >%f\n \n" % (Overhead_Confidence_leftside, Overhead_Confidence_rightside))
             f.write("Average droprate in percent %s\nStandard deviation %s\nWorstcase %s\n" % (DroprateAverage, Droprate_Variation, Worst_Droprate))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Droprate_Confidence_leftside, Droprate_Confidence_rightside))
             f.close()

@@ -13,7 +13,7 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                 
                 # We check if the previously defined dir_navn exists and if so we will look for the xml file in there
                 if (os.path.isdir(test_typer + "/" + test_typer_count)):
-                    xml_navn = test_typer + ".xml"
+                    xml_navn = "flowmonitor.xml"
                 # We open the flow_monitor xml file for extraction
                     Flow_Ids = []
                     f = open('%s/%s/%s/%s' % (test_typer, test_typer_count, statistic_test_count, xml_navn), 'r')
@@ -52,18 +52,16 @@ def Flow_Monitor(test_typer, test_typer_count, statistic_test_count):
                                 DataSent = PacketsSent * 1000
                                 DataReceived = 1000 * PacketsReceived
                                 EndtoEndDelay = int(Data[11][1:-4]) + EndtoEndDelay
-                                
+
                     if PacketsReceived != 0:
                         Average_EndtoEndDelay = (EndtoEndDelay /PacketsReceived)
     # We calculate data based on the sum of the previous extracted data 
                     sti = test_typer + "/"+ test_typer_count + "/" + statistic_test_count
-                    print(sti)
                     SamletData = int(AltDataSendt(sti))
                     if DataReceived != 0:
                         OverheadData = (((SamletData*1.0) -DataReceived*1.0)/(DataReceived*1.0))*100.0
-                    print(OverheadData)
-                    Packet_drop_rate = round((1.0-(PacketsReceived*1.0)/(PacketsSent*1.0)) * 100.0)
-                    print (Packet_drop_rate)
+                    if PacketsSent != 0:
+                        Packet_drop_rate = round((1.0-(PacketsReceived*1.0)/(PacketsSent*1.0)) * 100.0)
                     if len(Flow_Ids) != 0:
                     #We save a collecte_data.txt in each of the directories of the different tests run
                         Data_storage =  test_typer +"/" + test_typer_count

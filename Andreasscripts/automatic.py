@@ -16,6 +16,7 @@ else:
 
 nodes_cfg = {'start': 20, 'stop': 100, 'step': 10}
 runs = 50
+signal_strength = -10
 
 # With regards to different starting parameters a small list will be gone through and what they refer to.
 # changes in the script may be required in order to change the parameter of interest.
@@ -56,12 +57,13 @@ def run_simulation(dir_name, run_number, node_count, protocol):
                '--protocol={} '
                '--XRange=500 '
                '--YRange=500 '
-               '--SignalStrenght=0"')
+               '--SignalStrenght={}"')
 
     command = command.format(run_number,
                              dir_name,
                              node_count,
-                             protocol)
+                             protocol,
+                             signal_strength)
 
     print(command)
     os.popen(command, 'w', 0)

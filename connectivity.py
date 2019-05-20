@@ -1,15 +1,15 @@
 import os
 import re
 import math
-import array 
-Protocols = ['AODV', 'OLSR', 'DSR', 'DSDV']
+
+protocols = ['AODV', 'OLSR', 'DSR', 'DSDV']
 #Define distance allowed to assume connection with gain=-10 should be 580
-Distance = 550
+distance = 550
 
 
 #Function generates a matrix of connections and returns what nodes the Gateway is connected to.
 #The function takes a specific path to the test run such as path could be "AODV/AODV5/test5"
-def Matrixgenerator(dirnavn):
+def matrix_generator(dirnavn):
     Filename = dirnavn +"/time"
     for files in os.walk(Filename):
     # Going through each file in the directory here
@@ -49,7 +49,7 @@ def Matrixgenerator(dirnavn):
                     Connectivityrow.append(0)
                 for j in ID:
                     distance = math.sqrt((float(Xcoords[int(i)]) - float(Xcoords[int(j)]))**2 + (float(Ycoords[int(i)]) - float(Ycoords[int(j)]))**2)
-                    if distance < Distance:
+                    if distance < distance:
                         Connectivityrow[int(j)] = 1
                     else:
                         Connectivityrow[int(j)] = 0
@@ -66,7 +66,7 @@ def Matrixgenerator(dirnavn):
 
 #Simple way to automatically call the MatrixGenerator for all different simulations run
 def Generate_Neighbourmatrix():
-    for Protocol in Protocols:
+    for Protocol in protocols:
         #Protocols here are AODV, OLSR, DSR, DSDV which are defined previously
     #    Protocol="OLSR"
         for test_typer_count in os.walk("%s" % (Protocol)).next()[1]:
@@ -75,7 +75,7 @@ def Generate_Neighbourmatrix():
                 for statistic_test_count in os.walk("%s/%s" % ( Protocol, test_typer_count)).next()[1]: 
                 #statistic_test_count is the times a simulation with specific paramters as previously defined are run through to make statistics on them.
                     dir_navn = Protocol + "/" + test_typer_count + "/" + statistic_test_count
-                    Matrixgenerator(dir_navn)
+                    matrix_generator(dir_navn)
     
 
 
@@ -140,7 +140,7 @@ def connectivity(dirsti, fil):
 #This function will call the connectivity function for all different simulations
 #It has to be called after Generate_Neighbourmatrix() function
 def Generator_Connectivity():
-    for Protocol in Protocols:
+    for Protocol in protocols:
         for test_typer_count in os.walk("%s" % (Protocol)).next()[1]:
             if os.path.isdir('%s/%s' % (Protocol, test_typer_count )) == True:
                 for statistic_test_count in os.walk("%s/%s" % ( Protocol, test_typer_count)).next()[1]: 
@@ -158,7 +158,7 @@ def Generator_Connectivity():
 #After which it will averaged for all simulation using the same parameters such as 5nodes, 10 nodes and different routing
 #routing should however not affect this at all but it is still calculated.
 def Connecitvitysamler():
-    for Protocol in Protocols:
+    for Protocol in protocols:
         for test_typer_count in os.walk("%s" % (Protocol)).next()[1]:
             print "test testes der for "
             Samlet = 0

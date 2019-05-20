@@ -98,8 +98,7 @@ void writestamp(Time stamp, string fil){
 
 static void SavePosition(NodeContainer container)
 {
-    NS_LOG_UNCOND("watup");
-    NS_LOG_UNCOND(Simulator::Now().GetSeconds());
+  NS_LOG_INFO(Simulator::Now().GetSeconds());
   std::ofstream myfile;
   std::string filename = File_name + "/time" + "/p6Position" + std::to_string((int) Simulator::Now().GetSeconds()) + ".txt";
   myfile.open(filename);
@@ -111,7 +110,7 @@ static void SavePosition(NodeContainer container)
         Ptr<MobilityModel> position = object->GetObject<MobilityModel> ();
         NS_ASSERT (position != 0);
         Vector pos = position->GetPosition ();
-        //std::cout << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
+        NS_LOG_INFO("node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl);
         //myfile << "node=" << object->GetId() <<", x=" << pos.x << ", y=" << pos.y << std::endl;
         myfile << object->GetId() <<"," << pos.x << "," << pos.y << std::endl;
       }
@@ -127,11 +126,11 @@ static void SavePosition(NodeContainer container)
 void ReceivePacket (Ptr<Socket> socket)
 {
     auto stamp = Now();
-    //NS_LOG_UNCOND(stamp);
-    //NS_LOG_UNCOND ("Received one packet!");
+    NS_LOG_INFO(stamp);
+    NS_LOG_INFO ("Received one packet!");
     Ptr<Packet> packet;
     while (packet = socket->Recv ()){
-    //NS_LOG_UNCOND(packet->GetUid());
+    NS_LOG_INFO(packet->GetUid());
     //cout << packet->GetUid();
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
@@ -153,7 +152,7 @@ void ReceivePacket (Ptr<Socket> socket)
       //Due to the increased resolution of the randomnummer we use modulus the size of vector to ensure no out of bounds
       int v = static_cast<int>(Randomnummer()) % static_cast<int>(VectorSource.size()) ;
     
-      //NS_LOG_UNCOND(socket->GetNode()->GetId());
+      //NS_LOG_INFO(socket->GetNode()->GetId());
       socket = VectorSource[v];
       double Tid = (static_cast<int>(round(Randomnummer())) % (max_packetinterval*10))/10.0 + min_packetinterval;
       Time interPacketInterval = Seconds (Tid);
@@ -164,7 +163,7 @@ void ReceivePacket (Ptr<Socket> socket)
       Simulator::Schedule (pktInterval, &GenerateTrafficChild,
                            socket, pktSize,pktCount - 1, pktInterval);
       
-      NS_LOG_UNCOND ("Sending one packet!");
+      NS_LOG_INFO ("Sending one packet!");
     }
   else
     { 
@@ -177,19 +176,19 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
 {
     Simulator::Schedule (Seconds (0), &SavePosition, c);
     if(pktCount > 0){
-      NS_LOG_UNCOND(pktCount);
+      NS_LOG_INFO(pktCount);
       //Due to the increased resolution of the randomnummer we use modulus the size of vector to ensure no out of bounds
       int v = static_cast<int>(Randomnummer()) % static_cast<int>(VectorSource.size()) ;
       socket = VectorSource[v];
       double Tid = (static_cast<int>(round(Randomnummer())) %(max_packetinterval*10))/10.0 + min_packetinterval;
-      NS_LOG_UNCOND(Tid);
+      NS_LOG_INFO(Tid);
       Time interPacketInterval = Seconds (Tid);
       //Ptr<ns3::Tag> tag = ;
       Ptr<Packet> packet = Create<Packet> (pktSize); 
       socket->Send (packet);
       auto stamp = Now();
-      //NS_LOG_UNCOND(stamp);
-      //NS_LOG_UNCOND ("Sending one packet!");
+      NS_LOG_INFO(stamp);
+      NS_LOG_INFO ("Sending one packet!");
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
     string tekst = "Sending Pakke Uid, " + to_string(uid) + ", time , ";
@@ -203,7 +202,7 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
           GTC ++;
 Simulator::Schedule (pktInterval, &GenerateTrafficChild,
                            socket, pktSize, numPacketChildren, pktInterval);
-      NS_LOG_UNCOND ("Spawner et nyt monster");
+      //NS_LOG_INFO ("Spawner et nyt monster");
       }
     }
   else
@@ -238,7 +237,7 @@ int main (int argc, char *argv[])
   int SignalStrenght=-10;
   string protocol = "OLSR";
   File_name = "Results/" + protocol;
-  NS_LOG_UNCOND(File_name);
+  NS_LOG_INFO(File_name);
   
   /*Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Mode", StringValue ("Time"));
   Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Time", StringValue ("2s"));
@@ -288,8 +287,8 @@ int main (int argc, char *argv[])
 
   
   
-  NS_LOG_UNCOND ("Seed: " << seed );
-  NS_LOG_UNCOND ("Run: " << Run_number );
+  NS_LOG_INFO ("Seed: " << seed );
+  NS_LOG_INFO ("Run: " << Run_number );
 
   NodeContainer GW;
   GW.Create(numGW);
@@ -455,7 +454,7 @@ int main (int argc, char *argv[])
                                  Seconds (5.0), &GenerateTraffic,
                                  source, packetSize, numPackets, interPacketInterval); 
     
-//NS_LOG_UNCOND(book);
+//NS_LOG_INFO(book);
     
   if (tracing == true)
     {
@@ -485,7 +484,7 @@ int main (int argc, char *argv[])
   flowMonitor = flowHelper.InstallAll();
   
   uint32_t Maxtid = (numPackets * (max_packetinterval+min_packetinterval)) + numPackets;
-  NS_LOG_UNCOND(Maxtid);
+  NS_LOG_INFO(Maxtid);
   Simulator::Stop (Seconds (Maxtid));
   Simulator::Run ();
   flowMonitor->SerializeToXmlFile(xml, true, true);

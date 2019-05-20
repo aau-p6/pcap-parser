@@ -98,7 +98,7 @@ def auto_test():
 
         if not os.path.isdir(root):
             os.makedirs(root)
-        for node_count in range(nodes_cfg['start'], nodes_cfg['stop'], nodes_cfg['step']):
+        for node_count in range(nodes_cfg['start'], nodes_cfg['stop']+1, nodes_cfg['step']):
             dir_name = '{}/{}{}'.format(root, protocol, node_count)
             for i in range(runs):
                 run_number = i+1

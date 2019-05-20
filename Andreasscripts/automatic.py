@@ -71,12 +71,12 @@ def run_simulation(dir_name, run_number, node_count, protocol):
     end = time.time()
     days, hours, minutes, seconds = seconds_to_parts(end - start)
     print('{} node {} simulation {} took {}d {}h {}m {:.2f}s\n'.format(node_count,
-                                                                     protocol,
-                                                                     run_number,
-                                                                     int(days),
-                                                                     int(hours),
-                                                                     int(minutes),
-                                                                     seconds))
+                                                                       protocol,
+                                                                       run_number,
+                                                                       int(days),
+                                                                       int(hours),
+                                                                       int(minutes),
+                                                                       seconds))
 
 
 def seconds_to_parts(seconds):

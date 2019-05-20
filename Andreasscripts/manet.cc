@@ -75,8 +75,8 @@ string File_name = "Results/OLSR";
 }
 
 
-void write(string tekst){
-    string fil_navn = File_name + "/Logdata.txt";
+void write(string tekst, string fil){
+    string fil_navn = File_name + "/"+ fil +"Logdata.txt";
     ofstream myfile;
     myfile.open(fil_navn, ios::app);
     myfile << tekst;
@@ -84,8 +84,8 @@ void write(string tekst){
     
 }
 
-void writestamp(Time stamp){
-    string fil_navn = File_name + "/Logdata.txt";
+void writestamp(Time stamp, string fil){
+    string fil_navn = File_name + "/"+ fil +"Logdata.txt";
     ofstream myfile;
     myfile.open(fil_navn, ios::app);
     myfile << stamp << "\n";
@@ -137,8 +137,8 @@ void ReceivePacket (Ptr<Socket> socket)
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
     string tekst = "Received Pakke Uid, " + to_string(uid) + ", time , ";
-    write(tekst);
-    writestamp(stamp);
+    write(tekst, "Received");
+    writestamp(stamp, "Received");
     
         //string info = "Packet Uid:" + Uid;
         //info = info + "\n";
@@ -194,8 +194,8 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
     auto Uid = packet->GetUid();
     int uid =(int) Uid;
     string tekst = "Sending Pakke Uid, " + to_string(uid) + ", time , ";
-    write(tekst);
-    writestamp(stamp);
+    write(tekst, "Sending");
+    writestamp(stamp, "Sending");
 
       pktInterval = interPacketInterval;
       Simulator::Schedule (pktInterval, &GenerateTraffic,
@@ -495,6 +495,3 @@ int main (int argc, char *argv[])
 
   return 0;
 }
-
-
-

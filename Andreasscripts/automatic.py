@@ -50,7 +50,7 @@ def run_simulation(dir_name, run_number, node_count, protocol):
     if not os.path.isdir('{}/time'.format(dir_name)):
         os.makedirs('{}/time'.format(dir_name))
 
-    command = ('./waf --run "bitchboi-nylogging '
+    command = ('./waf --run "manet '
                '--Run_number={} '
                '--File_name={} '
                '--numNodes={} '

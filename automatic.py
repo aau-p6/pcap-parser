@@ -5,8 +5,8 @@ from threading import Thread, activeCount
 import time
 import sys
 
-max_threads = 7
-protocol_types = ['AODV', 'OLSR', 'DSR', 'DSDV']
+max_threads = 2
+protocol_types = ['OLSR']  # ['AODV', 'OLSR', 'DSR', 'DSDV']
 data_rates = []
 
 if len(sys.argv) > 1:
@@ -14,8 +14,8 @@ if len(sys.argv) > 1:
 else:
     ns3_dir = './'
 
-nodes_cfg = {'start': 20, 'stop': 100, 'step': 10}
-runs = 50
+nodes_cfg = {'start': 20, 'stop': 30, 'step': 10}
+runs = 2
 signal_strength = -10
 
 # With regards to different starting parameters a small list will be gone through and what they refer to.
@@ -98,7 +98,7 @@ def auto_test():
 
         if not os.path.isdir(root):
             os.makedirs(root)
-        for node_count in range(nodes_cfg['start'], nodes_cfg['stop'], nodes_cfg['step']):
+        for node_count in range(nodes_cfg['start'], nodes_cfg['stop']+1, nodes_cfg['step']):
             dir_name = '{}/{}{}'.format(root, protocol, node_count)
             for i in range(runs):
                 run_number = i+1

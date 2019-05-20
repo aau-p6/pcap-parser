@@ -5,8 +5,8 @@ from threading import Thread, activeCount
 import time
 import sys
 
-max_threads = 7
-protocol_types = ['AODV', 'OLSR', 'DSR', 'DSDV']
+max_threads = 2
+protocol_types = ['OLSR']  # ['AODV', 'OLSR', 'DSR', 'DSDV']
 data_rates = []
 
 if len(sys.argv) > 1:
@@ -14,8 +14,8 @@ if len(sys.argv) > 1:
 else:
     ns3_dir = './'
 
-nodes_cfg = {'start': 20, 'stop': 100, 'step': 10}
-runs = 50
+nodes_cfg = {'start': 20, 'stop': 30, 'step': 10}
+runs = 2
 signal_strength = -10
 
 # With regards to different starting parameters a small list will be gone through and what they refer to.

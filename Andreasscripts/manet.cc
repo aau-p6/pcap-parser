@@ -126,7 +126,6 @@ static void SavePosition(NodeContainer container)
 
 void ReceivePacket (Ptr<Socket> socket)
 {
-    Simulator::Schedule (Seconds (0), &SavePosition, c);
     auto stamp = Now();
     //NS_LOG_UNCOND(stamp);
     //NS_LOG_UNCOND ("Received one packet!");
@@ -176,7 +175,7 @@ void ReceivePacket (Ptr<Socket> socket)
 static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
                              int pktCount, Time pktInterval)
 {
-    
+    Simulator::Schedule (Seconds (0), &SavePosition, c);
     if(pktCount > 0){
       NS_LOG_UNCOND(pktCount);
       //Due to the increased resolution of the randomnummer we use modulus the size of vector to ensure no out of bounds

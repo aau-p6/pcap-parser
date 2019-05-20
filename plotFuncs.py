@@ -40,7 +40,7 @@ def readAndPlotConf(plotNum,filePathX,filePathLeft,filePathRight,outputName):
     rightData = list(map(int, rightData))
 
     print(leftData)
-    plotConfidence(plotNum,xData,leftData,rightData,1,outputName)
+    plotConfidence(plotNum,xData,leftData,rightData,1,outputName,"someting x-axis","something y-axis")
 
 def readAndPlotHist(plotNumber,dataPath,wantedBins,outputHistName):
     histData = []
@@ -72,16 +72,16 @@ def plotHistogram(figNumHis,dataSet,binAmount,fileNameHist):
     print("Following Histogram saved: {}.png \n".format(fileNameHist))
     plt.show()
 
-def plotConfidence(figNumConf,x_interval,left_side,right_side,middle,fileNameConf): 
+def plotConfidence(figNumConf,x_interval,left_side,right_side,middle,fileNameConf,x_Axis,y_Axis): 
     sortedLeft = [x for _,x in sorted(zip(x_interval,left_side))]
     sortedRight = [x for _,x in sorted(zip(x_interval,right_side))]
-    print(x_interval)
-    #x_interval.sort()
-    print(x_interval)
     plt.figure(figNumConf)
-    plt.plot(sorted(x_interval),sortedLeft,linestyle='dashed')
-    #plt.plot(sorted(x_interval),middle)
-    plt.plot(sorted(x_interval),sortedRight,linestyle='dashed')
+    plt.xlabel(x_Axis)
+    plt.ylabel(y_Axis)
+    plt.plot(sorted(x_interval),sortedLeft,label = "Left confidence",linestyle='dashed')
+    #plt.plot(sorted(x_interval),middle,label = "Average",linestyle='solid')
+    plt.plot(sorted(x_interval),sortedRight,label = "Right confidence",linestyle='dashed')
+    plt.legend()
     plt.savefig('/home/jonas/Documents/p6/{}.png'.format(fileNameConf)) #Write the path where you want to save the figure here
 
     print("Following Confidenceplot saved: {}.png \n".format(fileNameConf))

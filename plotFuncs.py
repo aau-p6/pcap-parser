@@ -55,18 +55,16 @@ def readAndPlotHist(plotNumber,dataPath,wantedBins,outputHistName):
     histData = list(map(float, histData))
     histData = list(map(int, histData))
 
-    plotHistogram(plotNumber,histData,wantedBins,outputHistName)
+    plotHistogram(plotNumber,histData,wantedBins,outputHistName,"end-to-end delay","amount")
 
-def plotHistogram(figNumHis,dataSet,binAmount,fileNameHist):
+def plotHistogram(figNumHis,dataSet,binAmount,fileNameHist,xAxis,yAxis):
 #End to end delay plots
     plt.figure(figNumHis)
     histogram_delay = plt.hist(dataSet,bins=binAmount)
 
-    my_unit = 'ms'
+    histogram_delay = plt.xlabel(xAxis)
 
-    histogram_delay = plt.xlabel('End-to-end delay (${}$)'.format(my_unit))
-
-    histogram_delay = plt.ylabel('Amount in bins')
+    histogram_delay = plt.ylabel(yAxis)
 
     plt.savefig('/home/jonas/Documents/p6/{}.png'.format(fileNameHist)) #Write the path where you want to save the figure here
     print("Following Histogram saved: {}.png \n".format(fileNameHist))

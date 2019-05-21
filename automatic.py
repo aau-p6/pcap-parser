@@ -151,11 +151,19 @@ def clean():
     exit(0)
 
 
+def ensure_optimized():
+    mode = os.popen('./waf --check-profile').read().split()[-1]
+
+    if mode == 'debug':
+        print('Switching to optimised ns3 build profile. This takes a while the first time')
+        os.popen('./waf configure --build-profile=optimized --out=build/optimized && ./waf build')
+
+
 os.chdir(args.ns3_path)
 
 if args.clean:
     clean()
     exit(0)
 
+ensure_optimized()
 auto_test()
-

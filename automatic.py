@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import subprocess
 from threading import Thread, activeCount
 import time
 import argparse
@@ -152,13 +153,13 @@ def clean():
 
 
 def ensure_optimized():
-    mode = os.popen('./waf --check-profile').read().split()[-1]
+    mode = subprocess.check_output(['./waf', '--check-profile']).split()[-1]
 
     if mode == 'debug':
         print('Switching to optimised ns3 build profile. This takes a while the first time')
         time.sleep(5)
-        os.popen('./waf configure --build-profile=optimized --out=build/optimized')
-        os.popen('./waf build')
+        subprocess.call(['./waf', 'configure', '--build-profile=optimized', '--out=build/optimized'])
+        subprocess.call(['./waf', 'build'])
 
 
 os.chdir(args.ns3_path)

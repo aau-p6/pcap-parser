@@ -146,6 +146,10 @@ def query_yes_no(question, default="yes"):
 
 
 def clean():
+    if not os.path.isdir('Results'):
+        print('Nothing to clean')
+        return
+
     if query_yes_no('Delete ' + os.path.abspath('Results'), 'no'):
         print('Deleting ' + os.path.abspath('Results'))
         rmtree('Results')

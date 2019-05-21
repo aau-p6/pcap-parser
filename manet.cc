@@ -137,7 +137,6 @@ void ReceivePacket (Ptr<Socket> socket)
     string tekst = "Received Pakke Uid, " + to_string(uid) + ", time , ";
     write(tekst, "Received");
     writestamp(stamp, "Received");
-    
         //string info = "Packet Uid:" + Uid;
         //info = info + "\n";
         //write(info);
@@ -184,7 +183,19 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
       NS_LOG_INFO(Tid);
       Time interPacketInterval = Seconds (Tid);
       //Ptr<ns3::Tag> tag = ;
-      Ptr<Packet> packet = Create<Packet> (pktSize); 
+
+      uint8_t buffer[1000];
+      for(int i=0; i<1000; i++)
+      {
+        buffer[i] = 0;
+      }
+      buffer[0] = (pktCount & 0xFF000000) >> 24;
+      buffer[1] = (pktCount & 0x00FF0000) >> 16;
+      buffer[2] = (pktCount & 0x0000FF00) >> 8;
+      buffer[3] = (pktCount & 0x000000FF);
+      
+
+      Ptr<Packet> packet = Create<Packet> ((uint8_t *) &buffer, pktSize);
       socket->Send (packet);
       auto stamp = Now();
       NS_LOG_INFO(stamp);
@@ -220,7 +231,7 @@ int main (int argc, char *argv[])
   numPacketChildren = numPackets;
   uint32_t sinkNode = 0; // Node der modtager (Gateway)
   uint32_t sourceNode = 1;
-  numNodes = 30;
+  numNodes = 20;
   double interval = 4.0; // seconds mellem hver pakke sendes
   //double interval_lower = 0.5;
   //double interval_higher = 2 - interval_lower;
@@ -235,9 +246,10 @@ int main (int argc, char *argv[])
   string XRange="1500.0";
   string YRange="1500.0";
   int SignalStrenght=-10;
-  string protocol = "OLSR";
+  string protocol = "DSDV";
   File_name = "Results/" + protocol;
   NS_LOG_INFO(File_name);
+  Packet::EnablePrinting();
   
   /*Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Mode", StringValue ("Time"));
   Config::SetDefault ("ns3::RandomWalk2dMobilityModel::Time", StringValue ("2s"));
@@ -440,13 +452,13 @@ int main (int argc, char *argv[])
   
   
   for (uint32_t v = 1; v < numNodes; v++){
-  Ptr<Socket> SamletSource = Socket::CreateSocket (c.Get (v), tid);
-  InetSocketAddress remote = InetSocketAddress (i.GetAddress (sinkNode, 0), 80);
-  //InetSocketAddress remote = InetSocketAddress (Ipv4Address ("255.255.255.255"), 80);
-  //source->SetAllowBroadcast (true);
-  SamletSource->Connect (remote);
-  
-  VectorSource.push_back(SamletSource);
+    Ptr<Socket> SamletSource = Socket::CreateSocket (c.Get (v), tid);
+    InetSocketAddress remote = InetSocketAddress (i.GetAddress (sinkNode, 0), 80);
+    //InetSocketAddress remote = InetSocketAddress (Ipv4Address ("255.255.255.255"), 80);
+    //source->SetAllowBroadcast (true);
+    SamletSource->Connect (remote);
+    
+    VectorSource.push_back(SamletSource);
   }
   
   Ptr<Socket> source = VectorSource[sourceNode]; 

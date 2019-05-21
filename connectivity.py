@@ -8,7 +8,7 @@ from shutil import rmtree
 
 protocols = ['OLSR']  # ['AODV', 'OLSR', 'DSR', 'DSDV']
 # Assume connection with gain=-10 should be 580
-distance = 550
+distance = 580
 
 parser = argparse.ArgumentParser(description='construct connectivity matrices')
 parser.add_argument('--ns3_path', help='The path to your ns3 root directory', default='.')

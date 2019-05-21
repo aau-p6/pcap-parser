@@ -156,7 +156,9 @@ def ensure_optimized():
 
     if mode == 'debug':
         print('Switching to optimised ns3 build profile. This takes a while the first time')
-        os.popen('./waf configure --build-profile=optimized --out=build/optimized && ./waf build')
+        time.sleep(5)
+        os.popen('./waf configure --build-profile=optimized --out=build/optimized')
+        os.popen('./waf build')
 
 
 os.chdir(args.ns3_path)

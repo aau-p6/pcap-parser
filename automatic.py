@@ -52,23 +52,25 @@ def run_simulation(dir_name, run_number, node_count, protocol):
     if not os.path.isdir('{}/time'.format(dir_name)):
         os.makedirs('{}/time'.format(dir_name))
 
-    command = ('./waf --run "manet '
-               '--Run_number={} '
-               '--File_name={} '
-               '--numNodes={} '
-               '--protocol={} '
-               '--XRange=500 '
-               '--YRange=500 '
-               '--SignalStrenght={}"')
+    command = [
+        './waf', '--run',
+        ('manet '
+         '--Run_number={} '
+         '--File_name={} '
+         '--numNodes={} '
+         '--protocol={} '
+         '--XRange=500 '
+         '--YRange=500 '
+         '--SignalStrenght={} '
+         ).format(run_number,
+                  dir_name,
+                  node_count,
+                  protocol,
+                  signal_strength)
+    ]
 
-    command = command.format(run_number,
-                             dir_name,
-                             node_count,
-                             protocol,
-                             signal_strength)
-
-    print(command)
-    os.popen(command, 'w', 0)
+    print(' '.join(command))
+    subprocess.call(command)
 
     end = time.time()
     days, hours, minutes, seconds = seconds_to_parts(end - start)

@@ -214,10 +214,6 @@ def clean():
                     rmtree(directory_name)
 
 
-x=1
-
-#if os.path.isdir()
-
 os.chdir(args.ns3_path)
 
 if args.clean:

@@ -3,16 +3,17 @@
 import os
 from threading import Thread, activeCount
 import time
-import sys
+import argparse
+from shutil import rmtree
 
 max_threads = 2
 protocol_types = ['OLSR']  # ['AODV', 'OLSR', 'DSR', 'DSDV']
 data_rates = []
 
-if len(sys.argv) > 1:
-    ns3_dir = sys.argv[1]
-else:
-    ns3_dir = './'
+parser = argparse.ArgumentParser(description='construct connectivity matrices')
+parser.add_argument('--ns3_path', help='The path to your ns3 root directory', default='.')
+parser.add_argument('--clean', default=False, action='store_true', help='Remove generated files')
+args = parser.parse_args()
 
 nodes_cfg = {'start': 20, 'stop': 30, 'step': 10}
 runs = 2
@@ -109,8 +110,52 @@ def auto_test():
                         thread = Thread(target=run_simulation, args=(run_name, run_number, node_count, protocol))
                         thread.start()
                         break
-    
-    
-os.chdir(ns3_dir)
+
+
+def query_yes_no(question, default="yes"):
+    """Ask a yes/no question via raw_input() and return their answer.
+
+    "question" is a string that is presented to the user.
+    "default" is the presumed answer if the user just hits <Enter>.
+        It must be "yes" (the default), "no" or None (meaning
+        an answer is required of the user).
+
+    The "answer" return value is True for "yes" or False for "no".
+    """
+    valid = {"yes": True, "y": True, "ye": True,
+             "no": False, "n": False}
+    if default is None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '{}'".format(default))
+
+    while True:
+        print(question + prompt)
+        choice = raw_input().lower()
+        if default is not None and choice == '':
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            print("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
+
+
+def clean():
+    if query_yes_no('Delete ' + os.path.abspath('Results'), 'no'):
+        print('Deleting ' + os.path.abspath('Results'))
+        rmtree('Results')
+    exit(0)
+
+
+os.chdir(args.ns3_path)
+
+if args.clean:
+    clean()
+    exit(0)
+
 auto_test()
 

@@ -115,6 +115,8 @@ def auto_test():
                         break
 
 
+# function from:
+# https://github.com/ActiveState/code/tree/5cf284892339de263d760babf6a15a9675843d94/recipes/Python/577058_query_yesno
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
 

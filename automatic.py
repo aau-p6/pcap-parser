@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import subprocess
@@ -118,7 +118,7 @@ def auto_test():
 # function from:
 # https://github.com/ActiveState/code/tree/5cf284892339de263d760babf6a15a9675843d94/recipes/Python/577058_query_yesno
 def query_yes_no(question, default="yes"):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """Ask a yes/no question via input() and return their answer.
 
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
@@ -140,7 +140,7 @@ def query_yes_no(question, default="yes"):
 
     while True:
         print(question + prompt)
-        choice = raw_input().lower()
+        choice = input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:

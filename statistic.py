@@ -1,8 +1,12 @@
+#!/usr/bin/env python
+
 import os
 import math
 from decimal import*
 Protocols = ["AODV", "DSR", "OLSR", "DSDV"];
 getcontext().prec = 10
+
+
 def statistic():
     
         Interval_Storage="Histogramdata/Intervaller"

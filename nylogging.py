@@ -1,13 +1,14 @@
-import matplotlib.pyplot as plt
+#!/usr/bin/env python
+
 import numpy as np
-import seaborn as sns
 import os
 import pcapy
-import math
 from threading import Thread, Lock
 import threading
 MaxThreads = 20
 mutex = Lock()
+
+
 def treatData(sendID,sendTime,rID,rTime, dataPath, saveplace):
     print "yessir"
     delayList = []

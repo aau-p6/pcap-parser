@@ -1,10 +1,10 @@
+#!/usr/bin/env python
+
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
-import os
-import math
 
 sns.set()
+
 
 def readAndPlotConf(plotNum,filePathX,filePathLeft,filePathRight,outputName):
     xData = []

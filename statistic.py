@@ -116,8 +116,8 @@ def statistic():
                 Overhead_Standard_deviation = math.sqrt(Overhead_Variation)
                 print Overhead_Standard_deviation
 
-                Overhead_Confidence_leftside = Decimal(Decimal(OverheadAverage) - (Decimal(1.96) * Decimal(Overhead_Standard_deviation)/Decimal(math.sqrt(len(Overhead_fixed)))))
-                Overhead_Confidence_rightside =Decimal(Decimal(OverheadAverage) + (Decimal(1.96) * Decimal(Overhead_Standard_deviation)/Decimal(math.sqrt(len(Overhead_fixed)))))
+                Overhead_Confidence_leftside = Decimal(Decimal(OverheadAverage) - (Decimal('1.96') * Decimal(Overhead_Standard_deviation)/Decimal(math.sqrt(len(Overhead_fixed)))))
+                Overhead_Confidence_rightside =Decimal(Decimal(OverheadAverage) + (Decimal('1.96') * Decimal(Overhead_Standard_deviation)/Decimal(math.sqrt(len(Overhead_fixed)))))
                 
             #Droprate
             #We first create a Droprate list by finding the droprate for each test

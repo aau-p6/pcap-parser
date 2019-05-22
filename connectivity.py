@@ -11,7 +11,7 @@ protocols = ['OLSR']  # ['AODV', 'OLSR', 'DSR', 'DSDV']
 distance = 580
 
 parser = argparse.ArgumentParser(description='construct connectivity matrices')
-parser.add_argument('--ns3_path', help='The path to your ns3 root directory', default='.')
+parser.add_argument('--results_path', help='The path to the results directory of the test', default='.')
 parser.add_argument('--clean', default=False, action='store_true', help='Remove generated files')
 args = parser.parse_args()
 
@@ -214,7 +214,7 @@ def clean():
                     rmtree(directory_name)
 
 
-os.chdir(args.ns3_path)
+os.chdir(args.results_path)
 
 if args.clean:
     clean()

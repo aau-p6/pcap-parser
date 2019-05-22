@@ -237,7 +237,7 @@ int main (int argc, char *argv[])
   //double interval_higher = 2 - interval_lower;
   bool verbose = false;
   bool tracing = false;
-  int nodeSpeed = 20;
+  int nodeSpeed = 5;
   int nodePause = 0;
   int Run_number = 1;
   uint32_t step =100;

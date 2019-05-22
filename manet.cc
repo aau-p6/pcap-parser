@@ -189,10 +189,22 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
       {
         buffer[i] = 0;
       }
-      buffer[0] = (pktCount & 0xFF000000) >> 24;
-      buffer[1] = (pktCount & 0x00FF0000) >> 16;
-      buffer[2] = (pktCount & 0x0000FF00) >> 8;
-      buffer[3] = (pktCount & 0x000000FF);
+
+      union Taghex
+      {
+        uint8_t buf[8];
+        uint64_t val;
+      }taghex;
+      
+      taghex.val = 0x123456789ABCDEF;
+      for (int i=0; i<8; i++)
+      {
+        buffer[7-i] = taghex.buf[i];
+      }
+      buffer[8] = (pktCount & 0xFF000000) >> 24;
+      buffer[9] = (pktCount & 0x00FF0000) >> 16;
+      buffer[10] = (pktCount & 0x0000FF00) >> 8;
+      buffer[11] = (pktCount & 0x000000FF);
       
 
       Ptr<Packet> packet = Create<Packet> ((uint8_t *) &buffer, pktSize);

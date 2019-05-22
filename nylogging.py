@@ -11,21 +11,20 @@ mutex = Lock()
 def treatData(sendID,sendTime,rID,rTime, dataPath, saveplace):
     print "yessir"
     delayList = []
+    endToEndDelay = 0
+    
     for i in range(len(sendID)):
-	    for j in range(len(rID)):
-		    if sendID[int(i)] == rID[int(j)]:
-			    delayList.append(rTime[int(j)] - sendTime[int(i)])
-    endToEndDelay = np.mean(delayList)
+        for j in range(len(rID)):
+            if sendID[int(i)] == rID[int(j)]:
+                delayList.append(rTime[int(j)] - sendTime[int(i)])
+    if len(delayList) != 0:
+        endToEndDelay = np.mean(delayList)
     #print("packets sent: {}\npackets received: {}".format(len(sendID),len(rID)))
     dropRate = round(((1-len(rID)*1.0/len(sendID))*100.0))
     #print("Droprate: {}".format(dropRate))
     #print("Average end-to-end delay is: {}".format(endToEndDelay))
-    #samletDat = AltDataSendt(dataPath)
-    samletDat = 1
-    Overhead = samletDat
-    if len(rID) != 0:
-        Overhead = (samletDat - (len(rID)*1000))/(len(rID)*1000)*100
-    print("Overhead in percent %d" %Overhead)
+    samletDataSent = AltDataSendt(dataPath)
+    print("samletDataSent%d" %samletDataSent)
     mutex.acquire()
     try:
         f = open("%s/Collected_data.txt" %saveplace, 'a')
@@ -33,7 +32,8 @@ def treatData(sendID,sendTime,rID,rTime, dataPath, saveplace):
         print dataPath
         print saveplace
         print len(rID)
-        f.write("Overhead in percent is %d\n"% (Overhead))
+        if len(rID) != 0:
+            f.write("samletDataSent is %d\n"% (samletDataSent))
         if len(rID) != 0:
             f.write("End to end delay is %d in nanoseconds\n" %endToEndDelay)
         f.write("packets sent %d\npackets received %d\n"%(len(sendID), len(rID)))

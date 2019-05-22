@@ -1,16 +1,20 @@
 import os
 import math
-Test_type = ["AODV", "DSR", "OLSR", "DSDV"];
-
+from decimal import*
+Protocols = ["AODV", "DSR", "OLSR", "DSDV"];
+getcontext().prec = 10
 def statistic():
-    Interval_Storage="Histogramdata/Intervaller"
-    if os.path.isdir(Interval_Storage) != True:
-        os.makedirs(Interval_Storage)
-    for test_navn in Test_type: # We are going through the 4 directories defined in Test_type
-        for node_count in os.walk("%s" % (test_navn)).next()[1]: # We go through the individual type test i.e 5 nodes, 10 nodes and so on
+    
+        Interval_Storage="Histogramdata/Intervaller"
+    #if os.path.isdir(Interval_Storage) != True:
+    #    os.makedirs(Interval_Storage)
+    #for Protocol in Protocols: # We are going through the 4 directories defined in Test_type
+        Protocol = "OLSR"
+        print os.walk("%s" % (Protocol)).next()
+        for node_count in os.walk("%s" % (Protocol)).next()[1]: # We go through the individual type test i.e 5 nodes, 10 nodes and so on
             #Clearing variables used during extraction of individual tests data.
             Delays = []
-            Overhead = []
+            samletDataSent = []
             PacketsSent = []
             PacketsReceived = []
             tempDelays = []
@@ -29,7 +33,7 @@ def statistic():
             Delay_Variation = 0
             Droprate_Variation = 0
             Overhead_Variation = 0
-            Worst_Overhead = 10
+            Worst_Overhead = 1
             Worst_delay = 0
             Worst_Droprate = 0
             Xnummer = []
@@ -41,24 +45,24 @@ def statistic():
             Droprate_Confidence_rightside = 0
             # We will now extract the actual number for the metrics
             #These are extracted by saving which lines contain the relevant info.
-            tempDelays = os.popen("grep nanoseconds %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
+            tempDelays = os.popen("grep nanoseconds %s/%s/Collected_data.txt" % ( Protocol, node_count)).read()
             for s in tempDelays.split(): 
                 #With the lines stored in tempDelays they are then afterwards cut up so that only the digits are preserved
                 #This only works because each line only has one number present
                 if s.isdigit():
                     Delays.append(s)
                     
-            tempOverhead = os.popen("grep Overhead %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
+            tempOverhead = os.popen("grep samletDataSent %s/%s/Collected_data.txt" % ( Protocol, node_count)).read()
             for s in tempOverhead.split(): 
                 if s.isdigit():
-                    Overhead.append(s)
+                    samletDataSent.append(s)
                     
-            tempPacketsSent = os.popen("grep 'packets sent' %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
+            tempPacketsSent = os.popen("grep 'packets sent' %s/%s/Collected_data.txt" % ( Protocol, node_count)).read()
             for s in tempPacketsSent.split(): 
                 if s.isdigit():
                     PacketsSent.append(s)
                     
-            tempPacketsReceived = os.popen("grep 'packets received' %s/%s/Collected_data.txt" % ( test_navn, node_count)).read()
+            tempPacketsReceived = os.popen("grep 'packets received' %s/%s/Collected_data.txt" % ( Protocol, node_count)).read()
             for s in tempPacketsReceived.split(): 
                 if s.isdigit():
                     PacketsReceived.append(s)
@@ -87,23 +91,39 @@ def statistic():
             #Comments in this section also apply to the others
             
             #Overhead
-            if len(Overhead) !=0:
-                for entry in Overhead:
-                    if Worst_Overhead < float(entry):
-                        Worst_Overhead = float(entry)
-                    OverheadAverage = OverheadAverage + (float(entry)-100)
-                OverheadAverage = OverheadAverage/len(Overhead)
-                for entry in Overhead:
-                    Overhead_Variation= ((float(entry)) - OverheadAverage) * ((float(entry))-OverheadAverage) + Overhead_Variation
-                Overhead_Variation = Overhead_Variation / len(Overhead)
+            getcontext().prec = 10
+            if len(samletDataSent) !=0:
+                for entry in range(len(samletDataSent)):
+                    
+                    if PacketsReceived[entry]!='0':
+                        #print "First:  ",PacketsReceived[entry], "   " ,samletDataSent[entry]
+                        PacketDataSent = int(PacketsReceived[entry])*20
+                        AllDataSent = int(samletDataSent[entry])
+                        Overhead_fixed.append(Decimal(1.0-((AllDataSent-PacketDataSent)*1.0/AllDataSent*1.0)))
+                getcontext().prec = 10
+                print("overhead is".format(Overhead_fixed))
+                for entry in Overhead_fixed:
+                    if Worst_Overhead > Decimal(entry):
+                        #print "nu"
+                        Worst_Overhead = Decimal(entry)
+                        #print entry
+                        #print Worst_Overhead
+                    OverheadAverage = OverheadAverage + (Decimal(entry))
+                OverheadAverage = OverheadAverage/len(Overhead_fixed)
+                for entry in Overhead_fixed:
+                    Overhead_Variation= ((Decimal(entry)) - OverheadAverage) * ((Decimal(entry))-OverheadAverage) + Overhead_Variation
+                Overhead_Variation = Overhead_Variation / len(Overhead_fixed)
                 Overhead_Standard_deviation = math.sqrt(Overhead_Variation)
-                Overhead_Confidence_leftside = round(OverheadAverage - (1.96 * Overhead_Standard_deviation/math.sqrt(len(Overhead))),5)
-                Overhead_Confidence_rightside =round(OverheadAverage + (1.96 * Overhead_Standard_deviation/math.sqrt(len(Overhead))), 5)
+                print Overhead_Standard_deviation
+
+                Overhead_Confidence_leftside = Decimal(Decimal(OverheadAverage) - (Decimal(1.96) * Decimal(Overhead_Standard_deviation)/Decimal(math.sqrt(len(Overhead_fixed)))))
+                Overhead_Confidence_rightside =Decimal(Decimal(OverheadAverage) + (Decimal(1.96) * Decimal(Overhead_Standard_deviation)/Decimal(math.sqrt(len(Overhead_fixed)))))
                 
             #Droprate
             #We first create a Droprate list by finding the droprate for each test
-            print len(PacketsReceived)
+            getcontext().prec = 10
             if len(PacketsReceived) !=0:
+                
                 for i in range(len(PacketsReceived)):
                     Droprate.append((1 * 1.0 - (int(PacketsReceived[i]) *1.0/ int(PacketsSent[i] )*1.0))*100) 
                 for entry in Droprate:
@@ -118,7 +138,7 @@ def statistic():
                 Droprate_Confidence_leftside = round(DroprateAverage - (1.96 * Droprate_Standard_deviation/math.sqrt(len(Droprate))), 2)
                 Droprate_Confidence_rightside = round(DroprateAverage + (1.96 * Droprate_Standard_deviation/math.sqrt(len(Droprate))), 2)
                 #print (" Droprate For test %s Confidence interval is %s < theta > %f" %(node_count, Droprate_Confidence_leftside, Droprate_Confidence_rightside))
-            
+            getcontext().prec = 10
             f = open("%s/Confidenceinterval_Left_Delay.txt" %Interval_Storage, 'a')
             f.write("%s,"%Delay_Confidence_leftside)
             f.close()
@@ -142,17 +162,17 @@ def statistic():
             f = open("%s/Confidenceinterval_Right_Droprate.txt" %Interval_Storage, 'a')
             f.write("%s,"%Droprate_Confidence_rightside)
             f.close()
-            if len(Overhead) != 0:
+            if len(Overhead_fixed) != 0:
                 f = open("%s/Confidenceinterval_Left_Overhead.txt" %Interval_Storage, 'a')
-                f.write("%f," %Overhead_Confidence_leftside)
+                f.write("{:.10f},".format(Overhead_Confidence_leftside))
                 f.close()
             
                 f = open("%s/Average_Overhead.txt" %Interval_Storage, 'a')
-                f.write("%s,"%OverheadAverage)
+                f.write("{:.10f},".format(OverheadAverage))
                 f.close()
             
                 f = open("%s/Confidenceinterval_Right_Overhead.txt" %Interval_Storage, 'a')
-                f.write("%f," %Overhead_Confidence_rightside)
+                f.write("{:.10f}," .format(Overhead_Confidence_rightside))
                 f.close()
         
             for s in node_count:
@@ -169,16 +189,15 @@ def statistic():
             f = open("%s/X.txt" %Interval_Storage, 'a')
             f.write("%s,"%X)
             f.close()
-                
             #Write to file - Is currently placed in the upper folder as in Results/{Protocol}/{Test_type} where the tests run for that configuration are placed.
             #Test_type could here be a specific amount of nodes.
-            f = open("%s/Statistic data.txt" %( test_navn), 'a')
+            f = open("%s/Statistic data.txt" %(Protocol), 'a')
             f.write("\n############################ Data for test %s ###########################\n" %node_count)
             f.write("Average Delay in milliseconds %s\nStandard deviation %s\nWorstcase %s\n" % (DelayAverage, Delay_Variation, Worst_delay))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Delay_Confidence_leftside, Delay_Confidence_rightside))
-            f.write("Average Overhead in Percent %s\nStandard deviation %s\nWorstcase %s\n" % (OverheadAverage, Overhead_Variation, Worst_Overhead))
-            if len(Overhead) !=0:
-                f.write("Confidence interval was %f < theta >%f\n \n" % (Overhead_Confidence_leftside, Overhead_Confidence_rightside))
+            f.write("Average Overhead in Percent {:.10f}\nStandard deviation {:.10f}\nWorstcase {:.10f}\n".format(OverheadAverage, Overhead_Variation, Worst_Overhead))
+            if len(Overhead_fixed) !=0:
+                f.write("Confidence interval was {:.10f} < theta >{:.10f}\n \n". format(Overhead_Confidence_leftside, Overhead_Confidence_rightside))
             f.write("Average droprate in percent %s\nStandard deviation %s\nWorstcase %s\n" % (DroprateAverage, Droprate_Variation, Worst_Droprate))
             f.write("Confidence interval was %f < theta >%f\n \n" % (Droprate_Confidence_leftside, Droprate_Confidence_rightside))
             f.close()

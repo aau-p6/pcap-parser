@@ -79,11 +79,12 @@ def hopcount(Protocol,statistic_test_count):
                             ipheader=unpack('!BBHHHBBHII',payload[56:76])
                             #167837956 does not exist in packets we want
                             if ipheader[8] !="167837956":
+                                if ipheader[5] != 1:
                             #167837953 seems to be some sort of identification for node 1 or gateway
-                                if ipheader[9] ==167837953:
-                                    i = i+1
+                                    if ipheader[9] ==167837953:
+                                        i = i+1
                             #Field 5 is the Ttl that is wanted. Where a Ttl of 64 is default and if this is read in the file it means 1 hop was taken
-                                    Samlethops = Samlethops + (65-ipheader[5])
+                                        Samlethops = Samlethops + (65-ipheader[5])
                     #should only execute this code if there was any udp packets to be read, where i is the number of udp packets read
                     if i > 0:
                         Averagehops = Samlethops*1.0/i

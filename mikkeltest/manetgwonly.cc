@@ -184,8 +184,8 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
       Time interPacketInterval = Seconds (Tid);
       //Ptr<ns3::Tag> tag = ;
 
-      uint8_t buffer[pktSize];
-      for(uint32_t i=0; i<pktSize; i++)
+      uint8_t buffer[1000];
+      for(int i=0; i<1000; i++)
       {
         buffer[i] = 0;
       }
@@ -243,23 +243,23 @@ int main (int argc, char *argv[])
   numPacketChildren = numPackets;
   uint32_t sinkNode = 0; // Node der modtager (Gateway)
   uint32_t sourceNode = 1;
-  numNodes = 20;
+  numNodes = 30;
   double interval = 4.0; // seconds mellem hver pakke sendes
   //double interval_lower = 0.5;
   //double interval_higher = 2 - interval_lower;
   bool verbose = false;
   bool tracing = false;
-  int nodeSpeed = 5;
-  int nodePause = 0;
+  int nodeSpeed = 0;
+  int nodePause = 1;
   int Run_number = 1;
   uint32_t step =100;
   unsigned int seed = 1234;
   uint32_t numGW = 1;
   string XRange="1500.0";
   string YRange="1500.0";
-  int SignalStrenght=-10;
+  int SignalStrenght=-16;
   string protocol = "DSDV";
-  File_name = "Results/" + protocol;
+  File_name = "Results/DSDV/testing/test1";
   NS_LOG_INFO(File_name);
   Packet::EnablePrinting();
   
@@ -496,8 +496,7 @@ int main (int argc, char *argv[])
 
   // Tracing
   string pcap = File_name + "/wifi-simple-adhoc";
-  //wifiPhy.EnablePcap (pcap, devices);
-  
+  wifiPhy.EnablePcap (pcap, devices.Get(0));
   
   
   
@@ -517,3 +516,4 @@ int main (int argc, char *argv[])
 
   return 0;
 }
+

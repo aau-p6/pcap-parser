@@ -8,7 +8,7 @@ from shutil import rmtree
 
 protocols = ['OLSR']  # ['AODV', 'OLSR', 'DSR', 'DSDV']
 # Assume connection with gain=-10 should be 580
-distance = 580
+distance = 290
 
 parser = argparse.ArgumentParser(description='construct connectivity matrices')
 parser.add_argument('--results_path', help='The path to the results directory of the test', default='.')

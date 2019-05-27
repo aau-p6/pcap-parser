@@ -10,8 +10,8 @@ getcontext().prec = 10
 def statistic():
     
         Interval_Storage="Histogramdata/Intervaller"
-    #if os.path.isdir(Interval_Storage) != True:
-    #    os.makedirs(Interval_Storage)
+        if os.path.isdir(Interval_Storage) != True:
+            os.makedirs(Interval_Storage)
     #for Protocol in Protocols: # We are going through the 4 directories defined in Test_type
         Protocol = "OLSR"
         print os.walk("%s" % (Protocol)).next()
